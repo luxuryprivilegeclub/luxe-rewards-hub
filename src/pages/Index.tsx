@@ -88,6 +88,33 @@ const Index = () => {
         
         <PrivilegesSection />
         
+        {/* Video Section */}
+        <section className="py-20 bg-luxury-rich-black">
+          <div className="container mx-auto px-4 md:px-6">
+            <ScrollAnimation type="fadeIn" className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-display font-medium mb-3">
+                <span className="text-luxury-gradient">Experience Luxury</span>
+              </h2>
+              <p className="text-white/70 max-w-2xl mx-auto">
+                Watch how our premium membership transforms your hotel booking experience.
+              </p>
+            </ScrollAnimation>
+            
+            <ScrollAnimation type="scale" className="max-w-4xl mx-auto">
+              <div className="aspect-w-16 aspect-h-9 overflow-hidden rounded-lg border border-luxury-gold/20 shadow-[0_8px_30px_rgb(0,0,0,0.5)]">
+                <iframe 
+                  className="w-full h-full"
+                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0" 
+                  title="Premium Hotel Experience" 
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                ></iframe>
+              </div>
+            </ScrollAnimation>
+          </div>
+        </section>
+        
         {/* Exclusive Deals Section */}
         <section className="py-20 bg-black">
           <div className="container mx-auto px-4 md:px-6">
