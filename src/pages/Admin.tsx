@@ -1,4 +1,4 @@
-
+<lov-code>
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link, Navigate, useNavigate } from "react-router-dom";
@@ -30,12 +30,69 @@ import {
 } from "lucide-react";
 import Footer from "@/components/Footer";
 
+// Define types for the database objects
+interface Page {
+  id: number;
+  title: string;
+  url: string;
+  lastModified: string;
+  content: string;
+}
+
+interface Deal {
+  id: number;
+  title: string;
+  location: string;
+  imageUrl: string;
+  regularPrice: number;
+  memberPrice: number;
+  discount: number;
+  rating: number;
+  description: string;
+}
+
+interface TourPackage {
+  id: number;
+  title: string;
+  location: string;
+  imageUrl: string;
+  regularPrice: number;
+  memberPrice: number;
+  discount: number;
+  rating: number;
+  description: string;
+}
+
+interface Member {
+  id: number;
+  name: string;
+  email: string;
+  type: string;
+  date: string;
+  points: number;
+}
+
+interface Settings {
+  siteTitle: string;
+  siteTagline: string;
+  currency: string;
+  paymentMethods: string;
+}
+
+interface Database {
+  pages: Page[];
+  deals: Deal[];
+  tourPackages: TourPackage[];
+  members: Member[];
+  settings: Settings;
+}
+
 // Mock database - in a real application, this would be stored in a backend database
 // This is a simple client-side simulation for demonstration purposes
 const initLocalDatabase = () => {
   // Initialize database if it doesn't exist
   if (!localStorage.getItem("database")) {
-    const initialDatabase = {
+    const initialDatabase: Database = {
       pages: [
         { id: 1, title: "Home", url: "/", lastModified: "2023-05-15", content: "Home page content" },
         { id: 2, title: "About", url: "/about", lastModified: "2023-05-12", content: "About page content" },
@@ -157,11 +214,11 @@ const initLocalDatabase = () => {
 initLocalDatabase();
 
 // Helper functions to interact with the "database"
-const getDatabase = () => {
-  return JSON.parse(localStorage.getItem("database") || "{}");
+const getDatabase = (): Database => {
+  return JSON.parse(localStorage.getItem("database") || "{}") as Database;
 };
 
-const saveDatabase = (data) => {
+const saveDatabase = (data: Database) => {
   localStorage.setItem("database", JSON.stringify(data));
 };
 
@@ -172,17 +229,22 @@ const Admin = () => {
   const navigate = useNavigate();
   
   // State for database data
-  const [pages, setPages] = useState([]);
-  const [deals, setDeals] = useState([]);
-  const [tourPackages, setTourPackages] = useState([]);
-  const [members, setMembers] = useState([]);
-  const [settings, setSettings] = useState({});
+  const [pages, setPages] = useState<Page[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [settings, setSettings] = useState<Settings>({
+    siteTitle: "",
+    siteTagline: "",
+    currency: "",
+    paymentMethods: ""
+  });
   
   // State for editing
-  const [editingPage, setEditingPage] = useState(null);
-  const [editingDeal, setEditingDeal] = useState(null);
-  const [editingTourPackage, setEditingTourPackage] = useState(null);
-  const [editingMember, setEditingMember] = useState(null);
+  const [editingPage, setEditingPage] = useState<Page | null>(null);
+  const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
+  const [editingTourPackage, setEditingTourPackage] = useState<TourPackage | null>(null);
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
   
   // Load data from database
   useEffect(() => {
@@ -191,7 +253,12 @@ const Admin = () => {
     setDeals(db.deals || []);
     setTourPackages(db.tourPackages || []);
     setMembers(db.members || []);
-    setSettings(db.settings || {});
+    setSettings(db.settings || {
+      siteTitle: "",
+      siteTagline: "",
+      currency: "",
+      paymentMethods: ""
+    });
     
     // Check if admin is already authenticated
     const adminAuth = localStorage.getItem("adminAuthenticated") === "true";
@@ -217,7 +284,7 @@ const Admin = () => {
   };
   
   // CRUD operations for pages
-  const handleSavePage = (page) => {
+  const handleSavePage = (page: Page) => {
     const db = getDatabase();
     const now = new Date().toISOString().split('T')[0];
     
@@ -246,7 +313,7 @@ const Admin = () => {
   };
   
   // CRUD operations for deals
-  const handleSaveDeal = (deal) => {
+  const handleSaveDeal = (deal: Deal) => {
     const db = getDatabase();
     
     if (deal.id) {
@@ -273,7 +340,7 @@ const Admin = () => {
   };
 
   // CRUD operations for tour packages
-  const handleSaveTourPackage = (tourPackage) => {
+  const handleSaveTourPackage = (tourPackage: TourPackage) => {
     const db = getDatabase();
     
     if (tourPackage.id) {
@@ -300,7 +367,7 @@ const Admin = () => {
   };
   
   // CRUD operations for members
-  const handleSaveMember = (member) => {
+  const handleSaveMember = (member: Member) => {
     const db = getDatabase();
     
     if (member.id) {
@@ -336,7 +403,7 @@ const Admin = () => {
   };
   
   // Delete operations
-  const handleDeleteDeal = (id) => {
+  const handleDeleteDeal = (id: number) => {
     if (confirm("Are you sure you want to delete this deal?")) {
       const db = getDatabase();
       db.deals = db.deals.filter(d => d.id !== id);
@@ -346,7 +413,7 @@ const Admin = () => {
     }
   };
   
-  const handleDeleteTourPackage = (id) => {
+  const handleDeleteTourPackage = (id: number) => {
     if (confirm("Are you sure you want to delete this tour package?")) {
       const db = getDatabase();
       db.tourPackages = db.tourPackages.filter(tp => tp.id !== id);
@@ -356,7 +423,7 @@ const Admin = () => {
     }
   };
   
-  const handleDeleteMember = (id) => {
+  const handleDeleteMember = (id: number) => {
     if (confirm("Are you sure you want to delete this member?")) {
       const db = getDatabase();
       db.members = db.members.filter(m => m.id !== id);
@@ -367,7 +434,7 @@ const Admin = () => {
   };
 
   // Format price with commas
-  const formatPrice = (price) => {
+  const formatPrice = (price?: number) => {
     return price?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || "0";
   };
 
@@ -756,555 +823,4 @@ const Admin = () => {
                             <Input
                               id="dealMemberPrice"
                               type="number"
-                              value={editingDeal.memberPrice}
-                              onChange={(e) => setEditingDeal({...editingDeal, memberPrice: Number(e.target.value)})}
-                              className="bg-luxury-rich-black border-luxury-gold/30 pl-10"
-                            />
-                            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-luxury-gold/50 h-4 w-4" />
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="dealDiscount">Discount %</Label>
-                          <div className="relative">
-                            <Input
-                              id="dealDiscount"
-                              type="number"
-                              value={editingDeal.discount}
-                              onChange={(e) => setEditingDeal({...editingDeal, discount: Number(e.target.value)})}
-                              className="bg-luxury-rich-black border-luxury-gold/30 pl-10"
-                            />
-                            <Percent className="absolute left-3 top-1/2 transform -translate-y-1/2 text-luxury-gold/50 h-4 w-4" />
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="dealRating">Rating</Label>
-                        <div className="relative">
-                          <Input
-                            id="dealRating"
-                            type="number"
-                            step="0.1"
-                            min="0"
-                            max="5"
-                            value={editingDeal.rating}
-                            onChange={(e) => setEditingDeal({...editingDeal, rating: Number(e.target.value)})}
-                            className="bg-luxury-rich-black border-luxury-gold/30 pl-10"
-                          />
-                          <Star className="absolute left-3 top-1/2 transform -translate-y-1/2 text-luxury-gold/50 h-4 w-4" />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="dealDescription">Description</Label>
-                        <Textarea
-                          id="dealDescription"
-                          value={editingDeal.description}
-                          onChange={(e) => setEditingDeal({...editingDeal, description: e.target.value})}
-                          className="bg-luxury-rich-black border-luxury-gold/30 min-h-[100px]"
-                        />
-                      </div>
-                      
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => setEditingDeal(null)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          className="bg-luxury-gold hover:bg-luxury-dark-gold text-black"
-                          onClick={() => handleSaveDeal(editingDeal)}
-                        >
-                          <Save className="mr-2 h-4 w-4" /> Save Deal
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex justify-between items-center mb-4">
-                      <h2 className="text-2xl font-display">Manage Hotel Deals</h2>
-                      <Button 
-                        className="bg-luxury-gold hover:bg-luxury-dark-gold text-black"
-                        onClick={() => setEditingDeal({
-                          title: "",
-                          location: "",
-                          imageUrl: "",
-                          regularPrice: 0,
-                          memberPrice: 0,
-                          discount: 0,
-                          rating: 0,
-                          description: ""
-                        })}
-                      >
-                        <Plus className="mr-2 h-4 w-4" /> Add New Deal
-                      </Button>
-                    </div>
-                    
-                    <div className="bg-black border border-luxury-gold/20 rounded-xl overflow-hidden">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-luxury-gold/20">
-                            <th className="text-left p-4">Hotel Name</th>
-                            <th className="text-left p-4">Location</th>
-                            <th className="text-left p-4">Regular Price</th>
-                            <th className="text-left p-4">Member Price</th>
-                            <th className="text-left p-4">Discount</th>
-                            <th className="text-left p-4">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {deals.map((deal) => (
-                            <tr key={deal.id} className="border-b border-luxury-gold/10">
-                              <td className="p-4">{deal.title}</td>
-                              <td className="p-4">{deal.location}</td>
-                              <td className="p-4">PKR {formatPrice(deal.regularPrice)}</td>
-                              <td className="p-4">PKR {formatPrice(deal.memberPrice)}</td>
-                              <td className="p-4">{deal.discount}%</td>
-                              <td className="p-4">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="text-luxury-gold mr-2"
-                                  onClick={() => setEditingDeal(deal)}
-                                >
-                                  Edit
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="text-red-500"
-                                  onClick={() => handleDeleteDeal(deal.id)}
-                                >
-                                  Delete
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </>
-                )}
-              </TabsContent>
-              
-              {/* Tour Packages Tab */}
-              <TabsContent value="tourPackages" className="space-y-6">
-                {editingTourPackage ? (
-                  <div className="bg-black border border-luxury-gold/20 rounded-xl p-6">
-                    <h3 className="text-xl font-medium mb-4">
-                      {editingTourPackage.id ? `Edit Tour Package: ${editingTourPackage.title}` : "Add New Tour Package"}
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="tourTitle">Tour Name</Label>
-                          <Input
-                            id="tourTitle"
-                            value={editingTourPackage.title}
-                            onChange={(e) => setEditingTourPackage({...editingTourPackage, title: e.target.value})}
-                            className="bg-luxury-rich-black border-luxury-gold/30"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="tourLocation">Location</Label>
-                          <div className="relative">
-                            <Input
-                              id="tourLocation"
-                              value={editingTourPackage.location}
-                              onChange={(e) => setEditingTourPackage({...editingTourPackage, location: e.target.value})}
-                              className="bg-luxury-rich-black border-luxury-gold/30 pl-10"
-                            />
-                            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-luxury-gold/50 h-4 w-4" />
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="tourImageUrl">Image URL</Label>
-                        <div className="relative">
-                          <Input
-                            id="tourImageUrl"
-                            value={editingTourPackage.imageUrl}
-                            onChange={(e) => setEditingTourPackage({...editingTourPackage, imageUrl: e.target.value})}
-                            className="bg-luxury-rich-black border-luxury-gold/30 pl-10"
-                          />
-                          <ImageIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-luxury-gold/50 h-4 w-4" />
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="tourRegularPrice">Regular Price</Label>
-                          <div className="relative">
-                            <Input
-                              id="tourRegularPrice"
-                              type="number"
-                              value={editingTourPackage.regularPrice}
-                              onChange={(e) => setEditingTourPackage({...editingTourPackage, regularPrice: Number(e.target.value)})}
-                              className="bg-luxury-rich-black border-luxury-gold/30 pl-10"
-                            />
-                            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-luxury-gold/50 h-4 w-4" />
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="tourMemberPrice">Member Price</Label>
-                          <div className="relative">
-                            <Input
-                              id="tourMemberPrice"
-                              type="number"
-                              value={editingTourPackage.memberPrice}
-                              onChange={(e) => setEditingTourPackage({...editingTourPackage, memberPrice: Number(e.target.value)})}
-                              className="bg-luxury-rich-black border-luxury-gold/30 pl-10"
-                            />
-                            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-luxury-gold/50 h-4 w-4" />
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="tourDiscount">Discount %</Label>
-                          <div className="relative">
-                            <Input
-                              id="tourDiscount"
-                              type="number"
-                              value={editingTourPackage.discount}
-                              onChange={(e) => setEditingTourPackage({...editingTourPackage, discount: Number(e.target.value)})}
-                              className="bg-luxury-rich-black border-luxury-gold/30 pl-10"
-                            />
-                            <Percent className="absolute left-3 top-1/2 transform -translate-y-1/2 text-luxury-gold/50 h-4 w-4" />
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="tourRating">Rating</Label>
-                        <div className="relative">
-                          <Input
-                            id="tourRating"
-                            type="number"
-                            step="0.1"
-                            min="0"
-                            max="5"
-                            value={editingTourPackage.rating}
-                            onChange={(e) => setEditingTourPackage({...editingTourPackage, rating: Number(e.target.value)})}
-                            className="bg-luxury-rich-black border-luxury-gold/30 pl-10"
-                          />
-                          <Star className="absolute left-3 top-1/2 transform -translate-y-1/2 text-luxury-gold/50 h-4 w-4" />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="tourDescription">Description</Label>
-                        <Textarea
-                          id="tourDescription"
-                          value={editingTourPackage.description}
-                          onChange={(e) => setEditingTourPackage({...editingTourPackage, description: e.target.value})}
-                          className="bg-luxury-rich-black border-luxury-gold/30 min-h-[100px]"
-                        />
-                      </div>
-                      
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => setEditingTourPackage(null)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          className="bg-luxury-gold hover:bg-luxury-dark-gold text-black"
-                          onClick={() => handleSaveTourPackage(editingTourPackage)}
-                        >
-                          <Save className="mr-2 h-4 w-4" /> Save Tour Package
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex justify-between items-center mb-4">
-                      <h2 className="text-2xl font-display">Manage Tour Packages</h2>
-                      <Button 
-                        className="bg-luxury-gold hover:bg-luxury-dark-gold text-black"
-                        onClick={() => setEditingTourPackage({
-                          title: "",
-                          location: "",
-                          imageUrl: "",
-                          regularPrice: 0,
-                          memberPrice: 0,
-                          discount: 0,
-                          rating: 0,
-                          description: ""
-                        })}
-                      >
-                        <Plus className="mr-2 h-4 w-4" /> Add New Tour Package
-                      </Button>
-                    </div>
-                    
-                    <div className="bg-black border border-luxury-gold/20 rounded-xl overflow-hidden">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-luxury-gold/20">
-                            <th className="text-left p-4">Tour Name</th>
-                            <th className="text-left p-4">Location</th>
-                            <th className="text-left p-4">Regular Price</th>
-                            <th className="text-left p-4">Member Price</th>
-                            <th className="text-left p-4">Discount</th>
-                            <th className="text-left p-4">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {tourPackages.map((tour) => (
-                            <tr key={tour.id} className="border-b border-luxury-gold/10">
-                              <td className="p-4">{tour.title}</td>
-                              <td className="p-4">{tour.location}</td>
-                              <td className="p-4">PKR {formatPrice(tour.regularPrice)}</td>
-                              <td className="p-4">PKR {formatPrice(tour.memberPrice)}</td>
-                              <td className="p-4">{tour.discount}%</td>
-                              <td className="p-4">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="text-luxury-gold mr-2"
-                                  onClick={() => setEditingTourPackage(tour)}
-                                >
-                                  Edit
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="text-red-500"
-                                  onClick={() => handleDeleteTourPackage(tour.id)}
-                                >
-                                  Delete
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </>
-                )}
-              </TabsContent>
-              
-              {/* Members Tab */}
-              <TabsContent value="members" className="space-y-6">
-                {editingMember ? (
-                  <div className="bg-black border border-luxury-gold/20 rounded-xl p-6">
-                    <h3 className="text-xl font-medium mb-4">
-                      {editingMember.id ? `Edit Member: ${editingMember.name}` : "Add New Member"}
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="memberName">Full Name</Label>
-                          <Input
-                            id="memberName"
-                            value={editingMember.name}
-                            onChange={(e) => setEditingMember({...editingMember, name: e.target.value})}
-                            className="bg-luxury-rich-black border-luxury-gold/30"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="memberEmail">Email</Label>
-                          <Input
-                            id="memberEmail"
-                            type="email"
-                            value={editingMember.email}
-                            onChange={(e) => setEditingMember({...editingMember, email: e.target.value})}
-                            className="bg-luxury-rich-black border-luxury-gold/30"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="memberType">Membership Type</Label>
-                          <select
-                            id="memberType"
-                            value={editingMember.type}
-                            onChange={(e) => setEditingMember({...editingMember, type: e.target.value})}
-                            className="bg-luxury-rich-black border border-luxury-gold/30 px-3 py-2 rounded-md w-full text-white"
-                          >
-                            <option value="Silver">Silver</option>
-                            <option value="Gold">Gold</option>
-                            <option value="Platinum">Platinum</option>
-                          </select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="memberPoints">Points</Label>
-                          <Input
-                            id="memberPoints"
-                            type="number"
-                            value={editingMember.points}
-                            onChange={(e) => setEditingMember({...editingMember, points: Number(e.target.value)})}
-                            className="bg-luxury-rich-black border-luxury-gold/30"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => setEditingMember(null)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          className="bg-luxury-gold hover:bg-luxury-dark-gold text-black"
-                          onClick={() => handleSaveMember(editingMember)}
-                        >
-                          <Save className="mr-2 h-4 w-4" /> {editingMember.id ? "Update Member" : "Add Member"}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex justify-between items-center mb-4">
-                      <h2 className="text-2xl font-display">Manage Members</h2>
-                      <Button 
-                        className="bg-luxury-gold hover:bg-luxury-dark-gold text-black"
-                        onClick={() => setEditingMember({
-                          name: "",
-                          email: "",
-                          type: "Silver",
-                          points: 0
-                        })}
-                      >
-                        <Plus className="mr-2 h-4 w-4" /> Add New Member
-                      </Button>
-                    </div>
-                    
-                    <div className="bg-black border border-luxury-gold/20 rounded-xl overflow-hidden">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-luxury-gold/20">
-                            <th className="text-left p-4">Name</th>
-                            <th className="text-left p-4">Email</th>
-                            <th className="text-left p-4">Membership Type</th>
-                            <th className="text-left p-4">Join Date</th>
-                            <th className="text-left p-4">Points</th>
-                            <th className="text-left p-4">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {members.map((member) => (
-                            <tr key={member.id} className="border-b border-luxury-gold/10">
-                              <td className="p-4">{member.name}</td>
-                              <td className="p-4">{member.email}</td>
-                              <td className="p-4">{member.type}</td>
-                              <td className="p-4">{member.date}</td>
-                              <td className="p-4">{member.points}</td>
-                              <td className="p-4">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="text-luxury-gold mr-2"
-                                  onClick={() => setEditingMember(member)}
-                                >
-                                  Edit
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="text-red-500"
-                                  onClick={() => handleDeleteMember(member.id)}
-                                >
-                                  Delete
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </>
-                )}
-              </TabsContent>
-              
-              {/* Settings Tab */}
-              <TabsContent value="settings" className="space-y-6">
-                <h2 className="text-2xl font-display mb-6">Website Settings</h2>
-                
-                <div className="bg-black border border-luxury-gold/20 rounded-xl p-6 space-y-6">
-                  <h3 className="text-xl font-medium">General Settings</h3>
-                  <Separator className="bg-luxury-gold/20" />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="site-title">Website Title</Label>
-                      <Input 
-                        id="site-title" 
-                        value={settings.siteTitle || ""}
-                        onChange={(e) => setSettings({...settings, siteTitle: e.target.value})}
-                        className="bg-luxury-rich-black border-luxury-gold/30" 
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="site-tagline">Tagline</Label>
-                      <Input 
-                        id="site-tagline" 
-                        value={settings.siteTagline || ""} 
-                        onChange={(e) => setSettings({...settings, siteTagline: e.target.value})}
-                        className="bg-luxury-rich-black border-luxury-gold/30" 
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-end mt-4">
-                    <Button 
-                      className="bg-luxury-gold hover:bg-luxury-dark-gold text-black"
-                      onClick={handleSaveSettings}
-                    >
-                      Save Settings
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="bg-black border border-luxury-gold/20 rounded-xl p-6 space-y-6">
-                  <h3 className="text-xl font-medium">Payment Settings</h3>
-                  <Separator className="bg-luxury-gold/20" />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="currency">Currency</Label>
-                      <Input 
-                        id="currency" 
-                        value={settings.currency || ""}
-                        onChange={(e) => setSettings({...settings, currency: e.target.value})} 
-                        className="bg-luxury-rich-black border-luxury-gold/30" 
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="payment-methods">Payment Methods</Label>
-                      <Input 
-                        id="payment-methods" 
-                        value={settings.paymentMethods || ""}
-                        onChange={(e) => setSettings({...settings, paymentMethods: e.target.value})}
-                        className="bg-luxury-rich-black border-luxury-gold/30" 
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-end mt-4">
-                    <Button 
-                      className="bg-luxury-gold hover:bg-luxury-dark-gold text-black"
-                      onClick={handleSaveSettings}
-                    >
-                      Save Settings
-                    </Button>
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </main>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default Admin;
+                              value
