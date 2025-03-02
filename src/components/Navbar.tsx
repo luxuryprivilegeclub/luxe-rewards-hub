@@ -1,12 +1,42 @@
+
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { Settings, User, LogOut } from "lucide-react";
+import { toast } from "sonner";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Check authentication status
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState("");
+  const [userRole, setUserRole] = useState("");
+
+  useEffect(() => {
+    // Check authentication status from localStorage
+    const checkAuth = () => {
+      const authStatus = localStorage.getItem("isAuthenticated") === "true";
+      const storedUsername = localStorage.getItem("username") || "";
+      const storedRole = localStorage.getItem("userRole") || "";
+      
+      setIsAuthenticated(authStatus);
+      setUsername(storedUsername);
+      setUserRole(storedRole);
+    };
+    
+    checkAuth();
+    
+    // Add event listener for storage changes (for multi-tab support)
+    window.addEventListener("storage", checkAuth);
+    
+    return () => {
+      window.removeEventListener("storage", checkAuth);
+    };
+  }, [location.pathname]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,6 +49,17 @@ const Navbar = () => {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+  
+  const handleLogout = () => {
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("username");
+    localStorage.removeItem("userRole");
+    setIsAuthenticated(false);
+    setUsername("");
+    setUserRole("");
+    toast.success("You have been logged out successfully");
+    navigate("/");
   };
 
   const navLinks = [
@@ -62,29 +103,56 @@ const Navbar = () => {
 
           {/* Actions */}
           <div className="hidden md:flex items-center space-x-3">
-            <Link to="/admin">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-white/80 hover:text-luxury-gold hover:bg-transparent"
-              >
-                <Settings className="h-4 w-4 mr-1" />
-                Admin
-              </Button>
-            </Link>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold"
-            >
-              Sign In
-            </Button>
-            <Button
-              size="sm"
-              className="bg-luxury-gold text-black hover:bg-luxury-dark-gold"
-            >
-              Join Now
-            </Button>
+            {userRole === "admin" && (
+              <Link to="/admin">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-white/80 hover:text-luxury-gold hover:bg-transparent"
+                >
+                  <Settings className="h-4 w-4 mr-1" />
+                  Admin
+                </Button>
+              </Link>
+            )}
+            
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-3">
+                <div className="text-sm text-white/80">
+                  <span className="mr-2">Welcome, {username}</span>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-4 w-4 mr-1" />
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold"
+                  >
+                    <User className="h-4 w-4 mr-1" />
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button
+                    size="sm"
+                    className="bg-luxury-gold text-black hover:bg-luxury-dark-gold"
+                  >
+                    Join Now
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -131,28 +199,55 @@ const Navbar = () => {
                   {item.label}
                 </Link>
               ))}
-              <Link
-                to="/admin"
-                className="text-sm text-white hover:text-luxury-gold"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Admin Portal
-              </Link>
-              <div className="flex space-x-3 pt-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold"
+              
+              {userRole === "admin" && (
+                <Link
+                  to="/admin"
+                  className="text-sm text-white hover:text-luxury-gold"
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Sign In
-                </Button>
-                <Button
-                  size="sm"
-                  className="bg-luxury-gold text-black hover:bg-luxury-dark-gold"
-                >
-                  Join Now
-                </Button>
-              </div>
+                  Admin Portal
+                </Link>
+              )}
+              
+              {isAuthenticated ? (
+                <>
+                  <div className="text-sm text-white/80">
+                    Welcome, {username}
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold"
+                    onClick={() => {
+                      handleLogout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <div className="flex flex-col space-y-2 pt-2">
+                  <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold"
+                    >
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button
+                      size="sm"
+                      className="w-full bg-luxury-gold text-black hover:bg-luxury-dark-gold"
+                    >
+                      Join Now
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </nav>
         )}
