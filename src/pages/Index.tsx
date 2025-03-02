@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
@@ -8,6 +7,7 @@ import PremiumCard from '@/components/PremiumCard';
 import Footer from '@/components/Footer';
 import ScrollAnimation from '@/components/ScrollAnimation';
 import { Button } from '@/components/ui/button';
+import JoinNowForm from '@/components/JoinNowForm';
 
 const Index = () => {
   // Sample exclusive deals data
@@ -218,9 +218,7 @@ const Index = () => {
                     ))}
                   </div>
                   
-                  <Button className="bg-luxury-gold hover:bg-luxury-dark-gold text-black min-w-[160px]">
-                    Become a Member
-                  </Button>
+                  <JoinNowForm />
                 </ScrollAnimation>
               </div>
             </div>
@@ -245,12 +243,7 @@ const Index = () => {
                 </p>
                 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <Button 
-                    size="lg" 
-                    className="bg-luxury-gold text-black hover:bg-luxury-dark-gold font-medium min-w-[160px]"
-                  >
-                    Sign Up Now
-                  </Button>
+                  <JoinNowForm />
                   <Button 
                     size="lg" 
                     variant="outline" 
