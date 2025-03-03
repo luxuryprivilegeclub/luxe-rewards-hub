@@ -1,5 +1,6 @@
 
 import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import BrandsCarousel from '@/components/BrandsCarousel';
@@ -9,25 +10,18 @@ import Footer from '@/components/Footer';
 import ScrollAnimation from '@/components/ScrollAnimation';
 import { Button } from '@/components/ui/button';
 import JoinNowForm from '@/components/JoinNowForm';
+import { getDatabase } from '@/utils/database';
 
 const Index = () => {
   // Load data from local storage database
   const getExclusiveDeals = () => {
-    const db = localStorage.getItem("database");
-    if (db) {
-      const parsedDb = JSON.parse(db);
-      return parsedDb.deals || [];
-    }
-    return [];
+    const db = getDatabase();
+    return db.deals || [];
   };
 
   const getTourPackages = () => {
-    const db = localStorage.getItem("database");
-    if (db) {
-      const parsedDb = JSON.parse(db);
-      return parsedDb.tourPackages || [];
-    }
-    return [];
+    const db = getDatabase();
+    return db.tourPackages || [];
   };
 
   // Sample exclusive deals data
@@ -124,12 +118,14 @@ const Index = () => {
             </div>
             
             <div className="text-center mt-12">
-              <Button 
-                variant="outline" 
-                className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold"
-              >
-                View All Deals
-              </Button>
+              <Link to="/deals">
+                <Button 
+                  variant="outline" 
+                  className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold"
+                >
+                  View All Deals
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
@@ -163,12 +159,14 @@ const Index = () => {
             </div>
             
             <div className="text-center mt-12">
-              <Button 
-                variant="outline" 
-                className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold"
-              >
-                View All Tour Packages
-              </Button>
+              <Link to="/tours">
+                <Button 
+                  variant="outline" 
+                  className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold"
+                >
+                  View All Tour Packages
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
@@ -263,13 +261,15 @@ const Index = () => {
                 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <JoinNowForm />
-                  <Button 
-                    size="lg" 
-                    variant="outline" 
-                    className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold font-medium min-w-[160px]"
-                  >
-                    Learn More
-                  </Button>
+                  <Link to="/about">
+                    <Button 
+                      size="lg" 
+                      variant="outline" 
+                      className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold font-medium min-w-[160px]"
+                    >
+                      Learn More
+                    </Button>
+                  </Link>
                 </div>
               </ScrollAnimation>
             </div>
