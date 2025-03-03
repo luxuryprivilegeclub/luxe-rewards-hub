@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,13 +10,11 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Check authentication status
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState("");
   const [userRole, setUserRole] = useState("");
 
   useEffect(() => {
-    // Check authentication status from localStorage
     const checkAuth = () => {
       const authStatus = localStorage.getItem("isAuthenticated") === "true";
       const storedUsername = localStorage.getItem("username") || "";
@@ -30,7 +27,6 @@ const Navbar = () => {
     
     checkAuth();
     
-    // Add event listener for storage changes (for multi-tab support)
     window.addEventListener("storage", checkAuth);
     
     return () => {
@@ -79,12 +75,10 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
-          {/* Logo */}
           <Link to="/" className="flex items-center">
-            <span className="text-xl md:text-2xl font-display text-luxury-gradient">Luxury Hotel</span>
+            <span className="text-xl md:text-2xl font-display text-luxury-gradient">Luxury Privilege Club</span>
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             {navLinks.map((item, index) => (
               <Link
@@ -101,7 +95,6 @@ const Navbar = () => {
             ))}
           </nav>
 
-          {/* Actions */}
           <div className="hidden md:flex items-center space-x-3">
             {userRole === "admin" && (
               <Link to="/admin">
@@ -155,7 +148,6 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile menu button */}
           <button
             onClick={toggleMobileMenu}
             className="md:hidden focus:outline-none"
@@ -181,7 +173,6 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Mobile Navigation */}
         {isMobileMenuOpen && (
           <nav className="md:hidden pt-5 pb-3">
             <div className="flex flex-col space-y-4">

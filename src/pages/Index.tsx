@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
@@ -10,49 +11,28 @@ import { Button } from '@/components/ui/button';
 import JoinNowForm from '@/components/JoinNowForm';
 
 const Index = () => {
-  // Sample exclusive deals data
-  const exclusiveDeals = [
-    {
-      id: 1,
-      title: "Marriott Hotel Islamabad",
-      location: "Islamabad, Pakistan",
-      imageUrl: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=1770&auto=format&fit=crop",
-      regularPrice: 35000,
-      memberPrice: 28000,
-      rating: 4.8,
-      discount: 20
-    },
-    {
-      id: 2,
-      title: "Pearl Continental Lahore",
-      location: "Lahore, Pakistan",
-      imageUrl: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?q=80&w=1770&auto=format&fit=crop",
-      regularPrice: 29500,
-      memberPrice: 23600,
-      rating: 4.7,
-      discount: 20
-    },
-    {
-      id: 3,
-      title: "Movenpick Hotel Karachi",
-      location: "Karachi, Pakistan",
-      imageUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1770&auto=format&fit=crop",
-      regularPrice: 32000,
-      memberPrice: 25600,
-      rating: 4.6,
-      discount: 20
-    },
-    {
-      id: 4,
-      title: "Serena Hotel Gilgit",
-      location: "Gilgit, Pakistan",
-      imageUrl: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?q=80&w=1770&auto=format&fit=crop",
-      regularPrice: 27000,
-      memberPrice: 21600,
-      rating: 4.9,
-      discount: 20
+  // Load data from local storage database
+  const getExclusiveDeals = () => {
+    const db = localStorage.getItem("database");
+    if (db) {
+      const parsedDb = JSON.parse(db);
+      return parsedDb.deals || [];
     }
-  ];
+    return [];
+  };
+
+  const getTourPackages = () => {
+    const db = localStorage.getItem("database");
+    if (db) {
+      const parsedDb = JSON.parse(db);
+      return parsedDb.tourPackages || [];
+    }
+    return [];
+  };
+
+  // Sample exclusive deals data
+  const exclusiveDeals = getExclusiveDeals();
+  const tourPackages = getTourPackages();
 
   // Scroll reveal function
   useEffect(() => {
@@ -104,7 +84,7 @@ const Index = () => {
               <div className="aspect-w-16 aspect-h-9 overflow-hidden rounded-lg border border-luxury-gold/20 shadow-[0_8px_30px_rgb(0,0,0,0.5)]">
                 <iframe 
                   className="w-full h-full"
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0" 
+                  src="https://www.youtube.com/embed/zvP-BoDL9I0" 
                   title="Premium Hotel Experience" 
                   frameBorder="0" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -149,6 +129,45 @@ const Index = () => {
                 className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold"
               >
                 View All Deals
+              </Button>
+            </div>
+          </div>
+        </section>
+        
+        {/* Tour Packages Section */}
+        <section className="py-20 bg-luxury-rich-black">
+          <div className="container mx-auto px-4 md:px-6">
+            <ScrollAnimation type="fadeIn" className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-display font-medium mb-3">
+                <span className="text-luxury-gradient">Tour Packages</span>
+              </h2>
+              <p className="text-white/70 max-w-2xl mx-auto">
+                Explore our exclusive tour packages with special member prices and unforgettable experiences.
+              </p>
+            </ScrollAnimation>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+              {tourPackages.map((tour, index) => (
+                <ScrollAnimation key={tour.id} type="scale" delay={index * 100}>
+                  <PremiumCard
+                    title={tour.title}
+                    location={tour.location}
+                    imageUrl={tour.imageUrl}
+                    regularPrice={tour.regularPrice}
+                    memberPrice={tour.memberPrice}
+                    rating={tour.rating}
+                    discount={tour.discount}
+                  />
+                </ScrollAnimation>
+              ))}
+            </div>
+            
+            <div className="text-center mt-12">
+              <Button 
+                variant="outline" 
+                className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold"
+              >
+                View All Tour Packages
               </Button>
             </div>
           </div>
