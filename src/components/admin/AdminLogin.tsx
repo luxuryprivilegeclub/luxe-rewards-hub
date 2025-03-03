@@ -21,8 +21,12 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
     e.preventDefault();
     if (username === "admin" && password === "admin123") {
       localStorage.setItem("adminAuthenticated", "true");
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("userRole", "admin");
+      localStorage.setItem("username", "admin");
       toast.success("Login successful");
-      onLogin();
+      onLogin(); // This calls the parent component's onLogin function
+      navigate("/admin"); // Force navigation to admin route
     } else {
       toast.error("Invalid credentials");
     }

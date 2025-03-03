@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 // Import admin components
 import AdminLogin from "@/components/admin/AdminLogin";
@@ -22,6 +22,7 @@ import { initLocalDatabase, getDatabase, saveDatabase, formatPrice } from "@/uti
 initLocalDatabase();
 
 const Admin = () => {
+  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
   
@@ -43,8 +44,9 @@ const Admin = () => {
   const [editingTourPackage, setEditingTourPackage] = useState<TourPackage | null>(null);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   
-  // Load data from database
+  // Load data from database and check authentication
   useEffect(() => {
+    console.log("Admin component mounted");
     const db = getDatabase();
     setPages(db.pages || []);
     setDeals(db.deals || []);
@@ -59,17 +61,21 @@ const Admin = () => {
     
     // Check if admin is already authenticated
     const adminAuth = localStorage.getItem("adminAuthenticated") === "true";
+    console.log("Admin authentication status:", adminAuth);
     setIsAuthenticated(adminAuth);
   }, []);
 
   const handleLogin = () => {
+    console.log("Admin logged in successfully");
     setIsAuthenticated(true);
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
     localStorage.removeItem("adminAuthenticated");
+    localStorage.removeItem("userRole");
     toast.info("Logged out successfully");
+    navigate("/");
   };
   
   const handleTabChange = (tab: string) => {
@@ -231,10 +237,14 @@ const Admin = () => {
     }
   };
 
+  console.log("Rendering Admin component, isAuthenticated:", isAuthenticated);
+  
   if (!isAuthenticated) {
+    console.log("Not authenticated, showing login screen");
     return <AdminLogin onLogin={handleLogin} />;
   }
 
+  console.log("Authenticated, showing admin panel");
   return (
     <div className="min-h-screen bg-luxury-rich-black text-white">
       <Helmet>
