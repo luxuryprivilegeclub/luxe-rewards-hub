@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface PremiumCardProps {
   title: string;
@@ -83,11 +84,13 @@ const PremiumCard = ({
           </div>
         </div>
         
-        <Button 
-          className="w-full bg-white text-black hover:bg-luxury-gold transition-colors duration-300"
-        >
-          View Deal
-        </Button>
+        <Link to="/deals">
+          <Button 
+            className="w-full bg-white text-black hover:bg-luxury-gold transition-colors duration-300"
+          >
+            View Deal
+          </Button>
+        </Link>
       </div>
     </div>
   );

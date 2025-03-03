@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,7 @@ interface AdminLoginProps {
 const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +39,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
           <div className="mb-6 text-center">
             <h1 className="text-2xl font-display text-luxury-gradient mb-2">Admin Portal</h1>
             <p className="text-white/60 text-sm">Enter your credentials to access the admin panel</p>
+            <p className="text-white/60 text-xs mt-2">(Username: admin, Password: admin123)</p>
           </div>
 
           <form onSubmit={handleLogin}>
