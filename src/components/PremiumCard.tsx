@@ -12,6 +12,7 @@ interface PremiumCardProps {
   rating: number;
   discount: number;
   className?: string;
+  id: number; // Add id to props
 }
 
 const PremiumCard = ({
@@ -22,7 +23,8 @@ const PremiumCard = ({
   memberPrice,
   rating,
   discount,
-  className = ''
+  className = '',
+  id // Add id to destructuring
 }: PremiumCardProps) => {
   // Format prices with commas
   const formatPrice = (price: number) => {
@@ -84,7 +86,7 @@ const PremiumCard = ({
           </div>
         </div>
         
-        <Link to={`/deals`}>
+        <Link to={`/deals/${id}`}>
           <Button 
             className="w-full bg-white text-black hover:bg-luxury-gold transition-colors duration-300"
           >

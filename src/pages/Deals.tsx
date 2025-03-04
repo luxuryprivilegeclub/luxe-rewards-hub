@@ -115,6 +115,7 @@ const Deals = () => {
                 {deals.map((deal, index) => (
                   <ScrollAnimation key={deal.id} type="scale" delay={index * 100}>
                     <PremiumCard
+                      id={deal.id}
                       title={deal.title}
                       location={deal.location}
                       imageUrl={deal.imageUrl}
