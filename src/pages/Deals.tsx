@@ -17,14 +17,19 @@ const Deals = () => {
 
   // Fetch deals from database
   useEffect(() => {
-    try {
-      const db = getDatabase();
-      setDeals(db.deals || []);
-    } catch (error) {
-      console.error('Error fetching deals:', error);
-    } finally {
-      setLoading(false);
-    }
+    const fetchDeals = async () => {
+      setLoading(true);
+      try {
+        const db = await getDatabase();
+        setDeals(db.deals || []);
+      } catch (error) {
+        console.error('Error fetching deals:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDeals();
   }, []);
 
   // Scroll reveal function

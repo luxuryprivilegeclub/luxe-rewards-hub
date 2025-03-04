@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,15 +17,13 @@ import SettingsTab from "@/components/admin/SettingsTab";
 
 // Import types and database helpers
 import { Page, Deal, TourPackage, Member, Settings } from "@/components/admin/types";
-import { initLocalDatabase, getDatabase, saveDatabase, formatPrice } from "@/utils/database";
-
-// Initialize the database
-initLocalDatabase();
+import { getDatabase, saveDatabase, deleteResource, formatPrice } from "@/utils/database";
 
 const Admin = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [isLoading, setIsLoading] = useState(true);
   
   // State for database data
   const [pages, setPages] = useState<Page[]>([]);
@@ -47,27 +46,58 @@ const Admin = () => {
   // Load data from database and check authentication
   useEffect(() => {
     console.log("Admin component mounted");
-    const db = getDatabase();
-    setPages(db.pages || []);
-    setDeals(db.deals || []);
-    setTourPackages(db.tourPackages || []);
-    setMembers(db.members || []);
-    setSettings(db.settings || {
-      siteTitle: "",
-      siteTagline: "",
-      currency: "",
-      paymentMethods: ""
-    });
+    
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const db = await getDatabase();
+        setPages(db.pages || []);
+        setDeals(db.deals || []);
+        setTourPackages(db.tourPackages || []);
+        setMembers(db.members || []);
+        setSettings(db.settings || {
+          siteTitle: "",
+          siteTagline: "",
+          currency: "",
+          paymentMethods: ""
+        });
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load data. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
     // Check if admin is already authenticated
     const adminAuth = localStorage.getItem("adminAuthenticated") === "true";
     console.log("Admin authentication status:", adminAuth);
     setIsAuthenticated(adminAuth);
+    
+    if (adminAuth) {
+      fetchData();
+    }
   }, []);
 
   const handleLogin = () => {
     console.log("Admin logged in successfully");
     setIsAuthenticated(true);
+    // Fetch data after login
+    getDatabase().then(db => {
+      setPages(db.pages || []);
+      setDeals(db.deals || []);
+      setTourPackages(db.tourPackages || []);
+      setMembers(db.members || []);
+      setSettings(db.settings || {
+        siteTitle: "",
+        siteTagline: "",
+        currency: "",
+        paymentMethods: ""
+      });
+    }).catch(error => {
+      console.error("Error fetching data after login:", error);
+      toast.error("Failed to load data. Please try again.");
+    });
   };
 
   const handleLogout = () => {
@@ -88,152 +118,234 @@ const Admin = () => {
   };
   
   // CRUD operations for pages
-  const handleSavePage = (page: Page) => {
-    const db = getDatabase();
+  const handleSavePage = async (page: Page) => {
     const now = new Date().toISOString().split('T')[0];
     
-    if (page.id) {
-      // Update existing page
-      const updatedPages = db.pages.map(p => 
-        p.id === page.id ? {...page, lastModified: now} : p
-      );
-      db.pages = updatedPages;
-      setPages(updatedPages);
-      toast.success(`Page "${page.title}" updated successfully`);
-    } else {
-      // Add new page
-      const newPage = {
-        ...page,
-        id: Date.now(),
-        lastModified: now
-      };
-      db.pages = [...db.pages, newPage];
-      setPages([...db.pages]);
-      toast.success(`Page "${page.title}" created successfully`);
+    try {
+      if (page.id) {
+        // Update existing page
+        const updatedPages = pages.map(p => 
+          p.id === page.id ? {...page, lastModified: now} : p
+        );
+        setPages(updatedPages);
+        
+        await saveDatabase({
+          ...await getDatabase(),
+          pages: updatedPages
+        });
+        
+        toast.success(`Page "${page.title}" updated successfully`);
+      } else {
+        // Add new page
+        const newPage = {
+          ...page,
+          lastModified: now
+        };
+        
+        const newPages = [...pages, newPage];
+        setPages(newPages);
+        
+        await saveDatabase({
+          ...await getDatabase(),
+          pages: newPages
+        });
+        
+        toast.success(`Page "${page.title}" created successfully`);
+      }
+      
+      setEditingPage(null);
+    } catch (error) {
+      console.error("Error saving page:", error);
+      toast.error("Failed to save page. Please try again.");
     }
-    
-    saveDatabase(db);
-    setEditingPage(null);
   };
   
   // CRUD operations for deals
-  const handleSaveDeal = (deal: Deal) => {
-    const db = getDatabase();
-    
-    if (deal.id) {
-      // Update existing deal
-      const updatedDeals = db.deals.map(d => 
-        d.id === deal.id ? deal : d
-      );
-      db.deals = updatedDeals;
-      setDeals(updatedDeals);
-      toast.success(`Deal "${deal.title}" updated successfully`);
-    } else {
-      // Add new deal
-      const newDeal = {
-        ...deal,
-        id: Date.now(),
-      };
-      db.deals = [...db.deals, newDeal];
-      setDeals([...db.deals]);
-      toast.success(`Deal "${deal.title}" created successfully`);
+  const handleSaveDeal = async (deal: Deal) => {
+    try {
+      if (deal.id) {
+        // Update existing deal
+        const updatedDeals = deals.map(d => 
+          d.id === deal.id ? deal : d
+        );
+        setDeals(updatedDeals);
+        
+        await saveDatabase({
+          ...await getDatabase(),
+          deals: updatedDeals
+        });
+        
+        toast.success(`Deal "${deal.title}" updated successfully`);
+      } else {
+        // Add new deal
+        const newDeals = [...deals, deal];
+        setDeals(newDeals);
+        
+        await saveDatabase({
+          ...await getDatabase(),
+          deals: newDeals
+        });
+        
+        toast.success(`Deal "${deal.title}" created successfully`);
+      }
+      
+      setEditingDeal(null);
+    } catch (error) {
+      console.error("Error saving deal:", error);
+      toast.error("Failed to save deal. Please try again.");
     }
-    
-    saveDatabase(db);
-    setEditingDeal(null);
   };
 
   // CRUD operations for tour packages
-  const handleSaveTourPackage = (tourPackage: TourPackage) => {
-    const db = getDatabase();
-    
-    if (tourPackage.id) {
-      // Update existing tour package
-      const updatedTourPackages = db.tourPackages.map(tp => 
-        tp.id === tourPackage.id ? tourPackage : tp
-      );
-      db.tourPackages = updatedTourPackages;
-      setTourPackages(updatedTourPackages);
-      toast.success(`Tour Package "${tourPackage.title}" updated successfully`);
-    } else {
-      // Add new tour package
-      const newTourPackage = {
-        ...tourPackage,
-        id: Date.now(),
-      };
-      db.tourPackages = [...db.tourPackages, newTourPackage];
-      setTourPackages([...db.tourPackages]);
-      toast.success(`Tour Package "${tourPackage.title}" created successfully`);
+  const handleSaveTourPackage = async (tourPackage: TourPackage) => {
+    try {
+      if (tourPackage.id) {
+        // Update existing tour package
+        const updatedTourPackages = tourPackages.map(tp => 
+          tp.id === tourPackage.id ? tourPackage : tp
+        );
+        setTourPackages(updatedTourPackages);
+        
+        await saveDatabase({
+          ...await getDatabase(),
+          tourPackages: updatedTourPackages
+        });
+        
+        toast.success(`Tour Package "${tourPackage.title}" updated successfully`);
+      } else {
+        // Add new tour package
+        const newTourPackages = [...tourPackages, tourPackage];
+        setTourPackages(newTourPackages);
+        
+        await saveDatabase({
+          ...await getDatabase(),
+          tourPackages: newTourPackages
+        });
+        
+        toast.success(`Tour Package "${tourPackage.title}" created successfully`);
+      }
+      
+      setEditingTourPackage(null);
+    } catch (error) {
+      console.error("Error saving tour package:", error);
+      toast.error("Failed to save tour package. Please try again.");
     }
-    
-    saveDatabase(db);
-    setEditingTourPackage(null);
   };
   
   // CRUD operations for members
-  const handleSaveMember = (member: Member) => {
-    const db = getDatabase();
-    
-    if (member.id) {
-      // Update existing member
-      const updatedMembers = db.members.map(m => 
-        m.id === member.id ? member : m
-      );
-      db.members = updatedMembers;
-      setMembers(updatedMembers);
-      toast.success(`Member "${member.name}" updated successfully`);
-    } else {
-      // Add new member
-      const newMember = {
-        ...member,
-        id: Date.now(),
-        date: new Date().toISOString().split('T')[0]
-      };
-      db.members = [...db.members, newMember];
-      setMembers([...db.members]);
-      toast.success(`Member "${member.name}" created successfully`);
+  const handleSaveMember = async (member: Member) => {
+    try {
+      if (member.id) {
+        // Update existing member
+        const updatedMembers = members.map(m => 
+          m.id === member.id ? member : m
+        );
+        setMembers(updatedMembers);
+        
+        await saveDatabase({
+          ...await getDatabase(),
+          members: updatedMembers
+        });
+        
+        toast.success(`Member "${member.name}" updated successfully`);
+      } else {
+        // Add new member
+        const newMember = {
+          ...member,
+          date: new Date().toISOString().split('T')[0]
+        };
+        
+        const newMembers = [...members, newMember];
+        setMembers(newMembers);
+        
+        await saveDatabase({
+          ...await getDatabase(),
+          members: newMembers
+        });
+        
+        toast.success(`Member "${member.name}" created successfully`);
+      }
+      
+      setEditingMember(null);
+    } catch (error) {
+      console.error("Error saving member:", error);
+      toast.error("Failed to save member. Please try again.");
     }
-    
-    saveDatabase(db);
-    setEditingMember(null);
   };
   
   // Save settings
-  const handleSaveSettings = () => {
-    const db = getDatabase();
-    db.settings = settings;
-    saveDatabase(db);
-    toast.success("Settings updated successfully");
+  const handleSaveSettings = async () => {
+    try {
+      await saveDatabase({
+        ...await getDatabase(),
+        settings
+      });
+      
+      toast.success("Settings updated successfully");
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      toast.error("Failed to save settings. Please try again.");
+    }
   };
   
   // Delete operations
-  const handleDeleteDeal = (id: number) => {
+  const handleDeleteDeal = async (id: number) => {
     if (confirm("Are you sure you want to delete this deal?")) {
-      const db = getDatabase();
-      db.deals = db.deals.filter(d => d.id !== id);
-      setDeals(db.deals);
-      saveDatabase(db);
-      toast.success("Deal deleted successfully");
+      try {
+        // Delete from database
+        const success = await deleteResource('deals', id);
+        
+        if (success) {
+          // Update state
+          setDeals(deals.filter(d => d.id !== id));
+          toast.success("Deal deleted successfully");
+        } else {
+          toast.error("Failed to delete deal. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error deleting deal:", error);
+        toast.error("Failed to delete deal. Please try again.");
+      }
     }
   };
   
-  const handleDeleteTourPackage = (id: number) => {
+  const handleDeleteTourPackage = async (id: number) => {
     if (confirm("Are you sure you want to delete this tour package?")) {
-      const db = getDatabase();
-      db.tourPackages = db.tourPackages.filter(tp => tp.id !== id);
-      setTourPackages(db.tourPackages);
-      saveDatabase(db);
-      toast.success("Tour package deleted successfully");
+      try {
+        // Delete from database
+        const success = await deleteResource('tour_packages', id);
+        
+        if (success) {
+          // Update state
+          setTourPackages(tourPackages.filter(tp => tp.id !== id));
+          toast.success("Tour package deleted successfully");
+        } else {
+          toast.error("Failed to delete tour package. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error deleting tour package:", error);
+        toast.error("Failed to delete tour package. Please try again.");
+      }
     }
   };
   
-  const handleDeleteMember = (id: number) => {
+  const handleDeleteMember = async (id: number) => {
     if (confirm("Are you sure you want to delete this member?")) {
-      const db = getDatabase();
-      db.members = db.members.filter(m => m.id !== id);
-      setMembers(db.members);
-      saveDatabase(db);
-      toast.success("Member deleted successfully");
+      try {
+        // Delete from database
+        const success = await deleteResource('members', id);
+        
+        if (success) {
+          // Update state
+          setMembers(members.filter(m => m.id !== id));
+          toast.success("Member deleted successfully");
+        } else {
+          toast.error("Failed to delete member. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error deleting member:", error);
+        toast.error("Failed to delete member. Please try again.");
+      }
     }
   };
 
@@ -245,6 +357,15 @@ const Admin = () => {
   }
 
   console.log("Authenticated, showing admin panel");
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-luxury-rich-black text-white flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-luxury-gold/30 border-t-luxury-gold rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+  
   return (
     <div className="min-h-screen bg-luxury-rich-black text-white">
       <Helmet>

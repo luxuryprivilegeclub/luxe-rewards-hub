@@ -9,7 +9,153 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      deals: {
+        Row: {
+          description: string
+          discount: number
+          id: number
+          image_url: string
+          location: string
+          member_price: number
+          rating: number
+          regular_price: number
+          title: string
+        }
+        Insert: {
+          description: string
+          discount: number
+          id?: number
+          image_url: string
+          location: string
+          member_price: number
+          rating: number
+          regular_price: number
+          title: string
+        }
+        Update: {
+          description?: string
+          discount?: number
+          id?: number
+          image_url?: string
+          location?: string
+          member_price?: number
+          rating?: number
+          regular_price?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      members: {
+        Row: {
+          date: string | null
+          email: string
+          id: number
+          name: string
+          points: number
+          type: string
+        }
+        Insert: {
+          date?: string | null
+          email: string
+          id?: number
+          name: string
+          points: number
+          type: string
+        }
+        Update: {
+          date?: string | null
+          email?: string
+          id?: number
+          name?: string
+          points?: number
+          type?: string
+        }
+        Relationships: []
+      }
+      pages: {
+        Row: {
+          content: string
+          id: number
+          last_modified: string | null
+          title: string
+          url: string
+        }
+        Insert: {
+          content: string
+          id?: number
+          last_modified?: string | null
+          title: string
+          url: string
+        }
+        Update: {
+          content?: string
+          id?: number
+          last_modified?: string | null
+          title?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      settings: {
+        Row: {
+          currency: string
+          id: number
+          payment_methods: string
+          site_tagline: string
+          site_title: string
+        }
+        Insert: {
+          currency: string
+          id?: number
+          payment_methods: string
+          site_tagline: string
+          site_title: string
+        }
+        Update: {
+          currency?: string
+          id?: number
+          payment_methods?: string
+          site_tagline?: string
+          site_title?: string
+        }
+        Relationships: []
+      }
+      tour_packages: {
+        Row: {
+          description: string
+          discount: number
+          id: number
+          image_url: string
+          location: string
+          member_price: number
+          rating: number
+          regular_price: number
+          title: string
+        }
+        Insert: {
+          description: string
+          discount: number
+          id?: number
+          image_url: string
+          location: string
+          member_price: number
+          rating: number
+          regular_price: number
+          title: string
+        }
+        Update: {
+          description?: string
+          discount?: number
+          id?: number
+          image_url?: string
+          location?: string
+          member_price?: number
+          rating?: number
+          regular_price?: number
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

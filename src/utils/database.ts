@@ -1,142 +1,268 @@
+import { supabase } from "@/integrations/supabase/client";
+import { Database, Settings, Deal, TourPackage, Member, Page } from "@/components/admin/types";
 
-import { Database, Settings } from "@/components/admin/types";
+// Initialize data in the database if it doesn't exist already
+export const initLocalDatabase = async () => {
+  // We'll keep this for backward compatibility but we're not using it anymore
+  console.log("Using Supabase as database backend");
+};
 
-// Mock database - in a real application, this would be stored in a backend database
-// This is a simple client-side simulation for demonstration purposes
-export const initLocalDatabase = () => {
-  // Initialize database if it doesn't exist
-  if (!localStorage.getItem("database")) {
-    const initialDatabase: Database = {
-      pages: [
-        { id: 1, title: "Home", url: "/", lastModified: "2023-05-15", content: "Home page content" },
-        { id: 2, title: "About", url: "/about", lastModified: "2023-05-12", content: "About page content" },
-        { id: 3, title: "Blog", url: "/blog", lastModified: "2023-05-10", content: "Blog page content" },
-        { id: 4, title: "Contact", url: "/contact", lastModified: "2023-05-08", content: "Contact page content" },
-        { id: 5, title: "Not Found", url: "*", lastModified: "2023-05-05", content: "Not found page content" },
-      ],
-      deals: [
-        {
-          id: 1,
-          title: "Marriott Hotel Islamabad",
-          location: "Islamabad, Pakistan",
-          imageUrl: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=1770&auto=format&fit=crop",
-          regularPrice: 35000,
-          memberPrice: 28000,
-          discount: 20,
-          rating: 4.8,
-          description: "Luxury accommodation in the heart of Islamabad",
-        },
-        {
-          id: 2,
-          title: "Pearl Continental Lahore",
-          location: "Lahore, Pakistan",
-          imageUrl: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?q=80&w=1770&auto=format&fit=crop",
-          regularPrice: 29500,
-          memberPrice: 23600,
-          discount: 20,
-          rating: 4.7,
-          description: "Experience true luxury in Lahore's premier hotel",
-        },
-        {
-          id: 3,
-          title: "Movenpick Hotel Karachi",
-          location: "Karachi, Pakistan",
-          imageUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1770&auto=format&fit=crop",
-          regularPrice: 32000,
-          memberPrice: 25600,
-          discount: 20,
-          rating: 4.6,
-          description: "Elegant and modern accommodation in Karachi",
-        },
-        {
-          id: 4,
-          title: "Serena Hotel Gilgit",
-          location: "Gilgit, Pakistan",
-          imageUrl: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?q=80&w=1770&auto=format&fit=crop",
-          regularPrice: 27000,
-          memberPrice: 21600,
-          discount: 20,
-          rating: 4.9,
-          description: "Breathtaking views and exceptional service",
-        },
-      ],
-      tourPackages: [
-        {
-          id: 1,
-          title: "Hunza Valley Tour",
-          location: "Hunza, Pakistan",
-          imageUrl: "https://images.unsplash.com/photo-1501854140801-50d01698950b?q=80&w=1500&auto=format&fit=crop",
-          regularPrice: 45000,
-          memberPrice: 36000,
-          rating: 4.9,
-          discount: 20,
-          description: "Experience the natural beauty of Hunza Valley with our exclusive 5-day package tour."
-        },
-        {
-          id: 2,
-          title: "Skardu Adventure",
-          location: "Skardu, Pakistan",
-          imageUrl: "https://images.unsplash.com/photo-1472396961693-142e6e269027?q=80&w=1500&auto=format&fit=crop",
-          regularPrice: 52000,
-          memberPrice: 41600,
-          rating: 4.8,
-          discount: 20,
-          description: "Discover the breathtaking landscapes of Skardu with our 7-day adventure tour package."
-        },
-        {
-          id: 3,
-          title: "Naran Kaghan Expedition",
-          location: "Naran, Pakistan",
-          imageUrl: "https://images.unsplash.com/photo-1496275068113-fff8c90750d1?q=80&w=1500&auto=format&fit=crop",
-          regularPrice: 38000,
-          memberPrice: 30400,
-          rating: 4.7,
-          discount: 20,
-          description: "Explore the stunning valleys of Naran and Kaghan with our all-inclusive 4-day tour."
-        },
-        {
-          id: 4,
-          title: "Murree Getaway",
-          location: "Murree, Pakistan",
-          imageUrl: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?q=80&w=1500&auto=format&fit=crop",
-          regularPrice: 25000,
-          memberPrice: 20000,
-          rating: 4.6,
-          discount: 20,
-          description: "Escape to Murree for a relaxing 3-day getaway with comfortable accommodations and guided tours."
-        }
-      ],
-      members: [
-        { id: 1, name: "Ahmed Khan", email: "ahmed@example.com", type: "Gold", date: "2023-01-15", points: 1250 },
-        { id: 2, name: "Sara Ali", email: "sara@example.com", type: "Platinum", date: "2023-02-22", points: 3400 },
-        { id: 3, name: "Imran Ahmed", email: "imran@example.com", type: "Silver", date: "2023-03-10", points: 750 },
-        { id: 4, name: "Fatima Rizvi", email: "fatima@example.com", type: "Gold", date: "2023-04-05", points: 1800 },
-      ],
+// Helper functions to interact with the database
+export const getDatabase = async (): Promise<Database> => {
+  try {
+    // Fetch all data from Supabase
+    const [pagesResult, dealsResult, tourPackagesResult, membersResult, settingsResult] = await Promise.all([
+      supabase.from('pages').select('*'),
+      supabase.from('deals').select('*'),
+      supabase.from('tour_packages').select('*'),
+      supabase.from('members').select('*'),
+      supabase.from('settings').select('*')
+    ]);
+
+    // Check for errors
+    if (pagesResult.error) throw new Error(`Error fetching pages: ${pagesResult.error.message}`);
+    if (dealsResult.error) throw new Error(`Error fetching deals: ${dealsResult.error.message}`);
+    if (tourPackagesResult.error) throw new Error(`Error fetching tour packages: ${tourPackagesResult.error.message}`);
+    if (membersResult.error) throw new Error(`Error fetching members: ${membersResult.error.message}`);
+    if (settingsResult.error) throw new Error(`Error fetching settings: ${settingsResult.error.message}`);
+
+    // Map database columns to camelCase for frontend
+    const pages = pagesResult.data.map((page): Page => ({
+      id: page.id,
+      title: page.title,
+      url: page.url,
+      lastModified: page.last_modified,
+      content: page.content
+    }));
+
+    const deals = dealsResult.data.map((deal): Deal => ({
+      id: deal.id,
+      title: deal.title,
+      location: deal.location,
+      imageUrl: deal.image_url,
+      regularPrice: deal.regular_price,
+      memberPrice: deal.member_price,
+      discount: deal.discount,
+      rating: deal.rating,
+      description: deal.description
+    }));
+
+    const tourPackages = tourPackagesResult.data.map((tourPackage): TourPackage => ({
+      id: tourPackage.id,
+      title: tourPackage.title,
+      location: tourPackage.location,
+      imageUrl: tourPackage.image_url,
+      regularPrice: tourPackage.regular_price,
+      memberPrice: tourPackage.member_price,
+      discount: tourPackage.discount,
+      rating: tourPackage.rating,
+      description: tourPackage.description
+    }));
+
+    const members = membersResult.data.map((member): Member => ({
+      id: member.id,
+      name: member.name,
+      email: member.email,
+      type: member.type,
+      date: member.date,
+      points: member.points
+    }));
+
+    // Settings should only have one row, so use the first one
+    const settingsData = settingsResult.data[0] || {
+      site_title: "Luxury Privilege Club",
+      site_tagline: "Pakistan's Premium Hotel Loyalty Program",
+      currency: "PKR",
+      payment_methods: "Credit Card, Bank Transfer"
+    };
+    
+    const settings: Settings = {
+      siteTitle: settingsData.site_title,
+      siteTagline: settingsData.site_tagline,
+      currency: settingsData.currency,
+      paymentMethods: settingsData.payment_methods
+    };
+
+    // Return the composed database object
+    return {
+      pages,
+      deals,
+      tourPackages,
+      members,
+      settings
+    };
+  } catch (error) {
+    console.error("Error fetching data from Supabase:", error);
+    // Return empty data structure in case of error
+    return {
+      pages: [],
+      deals: [],
+      tourPackages: [],
+      members: [],
       settings: {
         siteTitle: "Luxury Privilege Club",
         siteTagline: "Pakistan's Premium Hotel Loyalty Program",
         currency: "PKR",
-        paymentMethods: "Credit Card, Bank Transfer",
-      },
+        paymentMethods: "Credit Card, Bank Transfer"
+      }
     };
+  }
+};
+
+// Save data to Supabase
+export const saveDatabase = async (data: Database) => {
+  try {
+    // Save pages
+    for (const page of data.pages) {
+      if (page.id) {
+        // Update existing page
+        await supabase
+          .from('pages')
+          .update({
+            title: page.title,
+            url: page.url,
+            last_modified: new Date().toISOString(),
+            content: page.content
+          })
+          .eq('id', page.id);
+      } else {
+        // Insert new page
+        await supabase
+          .from('pages')
+          .insert({
+            title: page.title,
+            url: page.url,
+            content: page.content
+          });
+      }
+    }
+
+    // Save deals
+    for (const deal of data.deals) {
+      if (deal.id) {
+        // Update existing deal
+        await supabase
+          .from('deals')
+          .update({
+            title: deal.title,
+            location: deal.location,
+            image_url: deal.imageUrl,
+            regular_price: deal.regularPrice,
+            member_price: deal.memberPrice,
+            discount: deal.discount,
+            rating: deal.rating,
+            description: deal.description
+          })
+          .eq('id', deal.id);
+      } else {
+        // Insert new deal
+        await supabase
+          .from('deals')
+          .insert({
+            title: deal.title,
+            location: deal.location,
+            image_url: deal.imageUrl,
+            regular_price: deal.regularPrice,
+            member_price: deal.memberPrice,
+            discount: deal.discount,
+            rating: deal.rating,
+            description: deal.description
+          });
+      }
+    }
+
+    // Save tour packages
+    for (const tourPackage of data.tourPackages) {
+      if (tourPackage.id) {
+        // Update existing tour package
+        await supabase
+          .from('tour_packages')
+          .update({
+            title: tourPackage.title,
+            location: tourPackage.location,
+            image_url: tourPackage.imageUrl,
+            regular_price: tourPackage.regularPrice,
+            member_price: tourPackage.memberPrice,
+            discount: tourPackage.discount,
+            rating: tourPackage.rating,
+            description: tourPackage.description
+          })
+          .eq('id', tourPackage.id);
+      } else {
+        // Insert new tour package
+        await supabase
+          .from('tour_packages')
+          .insert({
+            title: tourPackage.title,
+            location: tourPackage.location,
+            image_url: tourPackage.imageUrl,
+            regular_price: tourPackage.regularPrice,
+            member_price: tourPackage.memberPrice,
+            discount: tourPackage.discount,
+            rating: tourPackage.rating,
+            description: tourPackage.description
+          });
+      }
+    }
+
+    // Save members
+    for (const member of data.members) {
+      if (member.id) {
+        // Update existing member
+        await supabase
+          .from('members')
+          .update({
+            name: member.name,
+            email: member.email,
+            type: member.type,
+            points: member.points
+          })
+          .eq('id', member.id);
+      } else {
+        // Insert new member
+        await supabase
+          .from('members')
+          .insert({
+            name: member.name,
+            email: member.email,
+            type: member.type,
+            points: member.points
+          });
+      }
+    }
+
+    // Save settings
+    await supabase
+      .from('settings')
+      .update({
+        site_title: data.settings.siteTitle,
+        site_tagline: data.settings.siteTagline,
+        currency: data.settings.currency,
+        payment_methods: data.settings.paymentMethods
+      })
+      .eq('id', 1);
+
+    console.log("Data saved to Supabase successfully");
+  } catch (error) {
+    console.error("Error saving data to Supabase:", error);
+  }
+};
+
+// Delete operations
+export const deleteResource = async (table: string, id: number) => {
+  try {
+    const { error } = await supabase
+      .from(table)
+      .delete()
+      .eq('id', id);
     
-    localStorage.setItem("database", JSON.stringify(initialDatabase));
+    if (error) throw error;
+    console.log(`Successfully deleted item with id ${id} from ${table}`);
+    return true;
+  } catch (error) {
+    console.error(`Error deleting from ${table}:`, error);
+    return false;
   }
-};
-
-// Helper functions to interact with the "database"
-export const getDatabase = (): Database => {
-  const data = localStorage.getItem("database");
-  if (!data) {
-    // If database doesn't exist, initialize it
-    initLocalDatabase();
-    return getDatabase();
-  }
-  return JSON.parse(data) as Database;
-};
-
-export const saveDatabase = (data: Database) => {
-  localStorage.setItem("database", JSON.stringify(data));
 };
 
 // Format price with commas
