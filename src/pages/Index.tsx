@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
@@ -10,23 +10,74 @@ import Footer from '@/components/Footer';
 import ScrollAnimation from '@/components/ScrollAnimation';
 import { Button } from '@/components/ui/button';
 import JoinNowForm from '@/components/JoinNowForm';
-import { getDatabase } from '@/utils/database';
+import { supabase } from '@/integrations/supabase/client';
+import { Deal, TourPackage } from '@/components/admin/types';
+import { toast } from "sonner";
 
 const Index = () => {
-  // Load data from local storage database
-  const getExclusiveDeals = () => {
-    const db = getDatabase();
-    return db.deals || [];
-  };
+  const [exclusiveDeals, setExclusiveDeals] = useState<Deal[]>([]);
+  const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const getTourPackages = () => {
-    const db = getDatabase();
-    return db.tourPackages || [];
-  };
+  // Fetch deals and tour packages from Supabase
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch deals
+        const { data: dealsData, error: dealsError } = await supabase
+          .from('deals')
+          .select('*')
+          .limit(4);
+        
+        if (dealsError) throw dealsError;
 
-  // Sample exclusive deals data
-  const exclusiveDeals = getExclusiveDeals();
-  const tourPackages = getTourPackages();
+        // Fetch tour packages
+        const { data: packagesData, error: packagesError } = await supabase
+          .from('tour_packages')
+          .select('*')
+          .limit(4);
+        
+        if (packagesError) throw packagesError;
+
+        // Format deals data
+        const formattedDeals = dealsData.map((deal): Deal => ({
+          id: deal.id,
+          title: deal.title,
+          location: deal.location,
+          imageUrl: deal.image_url,
+          regularPrice: deal.regular_price,
+          memberPrice: deal.member_price,
+          discount: deal.discount,
+          rating: deal.rating,
+          description: deal.description
+        }));
+
+        // Format tour packages data
+        const formattedPackages = packagesData.map((pkg): TourPackage => ({
+          id: pkg.id,
+          title: pkg.title,
+          location: pkg.location,
+          imageUrl: pkg.image_url,
+          regularPrice: pkg.regular_price,
+          memberPrice: pkg.member_price,
+          discount: pkg.discount,
+          rating: pkg.rating,
+          description: pkg.description
+        }));
+
+        setExclusiveDeals(formattedDeals);
+        setTourPackages(formattedPackages);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        toast.error("Failed to load data. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Scroll reveal function
   useEffect(() => {
@@ -62,7 +113,7 @@ const Index = () => {
         
         <PrivilegesSection />
         
-        {/* Video Section */}
+        {/* Video Section - adjusted height */}
         <section className="py-20 bg-luxury-rich-black">
           <div className="container mx-auto px-4 md:px-6">
             <ScrollAnimation type="fadeIn" className="text-center mb-12">
@@ -75,9 +126,9 @@ const Index = () => {
             </ScrollAnimation>
             
             <ScrollAnimation type="scale" className="max-w-4xl mx-auto">
-              <div className="aspect-w-16 aspect-h-9 overflow-hidden rounded-lg border border-luxury-gold/20 shadow-[0_8px_30px_rgb(0,0,0,0.5)]">
+              <div className="relative pb-[56.25%] h-0 overflow-hidden rounded-lg border border-luxury-gold/20 shadow-[0_8px_30px_rgb(0,0,0,0.5)]">
                 <iframe 
-                  className="w-full h-full"
+                  className="absolute top-0 left-0 w-full h-full"
                   src="https://www.youtube.com/embed/zvP-BoDL9I0" 
                   title="Premium Hotel Experience" 
                   frameBorder="0" 
@@ -101,21 +152,31 @@ const Index = () => {
               </p>
             </ScrollAnimation>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-              {exclusiveDeals.map((deal, index) => (
-                <ScrollAnimation key={deal.id} type="scale" delay={index * 100}>
-                  <PremiumCard
-                    title={deal.title}
-                    location={deal.location}
-                    imageUrl={deal.imageUrl}
-                    regularPrice={deal.regularPrice}
-                    memberPrice={deal.memberPrice}
-                    rating={deal.rating}
-                    discount={deal.discount}
-                  />
-                </ScrollAnimation>
-              ))}
-            </div>
+            {loading ? (
+              <div className="flex justify-center items-center h-40">
+                <div className="w-12 h-12 border-4 border-luxury-gold/30 border-t-luxury-gold rounded-full animate-spin"></div>
+              </div>
+            ) : exclusiveDeals.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+                {exclusiveDeals.map((deal, index) => (
+                  <ScrollAnimation key={deal.id} type="scale" delay={index * 100}>
+                    <PremiumCard
+                      title={deal.title}
+                      location={deal.location}
+                      imageUrl={deal.imageUrl}
+                      regularPrice={deal.regularPrice}
+                      memberPrice={deal.memberPrice}
+                      rating={deal.rating}
+                      discount={deal.discount}
+                    />
+                  </ScrollAnimation>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-white/70 text-lg">No deals available at the moment. Please check back later.</p>
+              </div>
+            )}
             
             <div className="text-center mt-12">
               <Link to="/deals">
@@ -142,21 +203,31 @@ const Index = () => {
               </p>
             </ScrollAnimation>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-              {tourPackages.map((tour, index) => (
-                <ScrollAnimation key={tour.id} type="scale" delay={index * 100}>
-                  <PremiumCard
-                    title={tour.title}
-                    location={tour.location}
-                    imageUrl={tour.imageUrl}
-                    regularPrice={tour.regularPrice}
-                    memberPrice={tour.memberPrice}
-                    rating={tour.rating}
-                    discount={tour.discount}
-                  />
-                </ScrollAnimation>
-              ))}
-            </div>
+            {loading ? (
+              <div className="flex justify-center items-center h-40">
+                <div className="w-12 h-12 border-4 border-luxury-gold/30 border-t-luxury-gold rounded-full animate-spin"></div>
+              </div>
+            ) : tourPackages.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+                {tourPackages.map((tour, index) => (
+                  <ScrollAnimation key={tour.id} type="scale" delay={index * 100}>
+                    <PremiumCard
+                      title={tour.title}
+                      location={tour.location}
+                      imageUrl={tour.imageUrl}
+                      regularPrice={tour.regularPrice}
+                      memberPrice={tour.memberPrice}
+                      rating={tour.rating}
+                      discount={tour.discount}
+                    />
+                  </ScrollAnimation>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-white/70 text-lg">No tour packages available at the moment. Please check back later.</p>
+              </div>
+            )}
             
             <div className="text-center mt-12">
               <Link to="/tours">

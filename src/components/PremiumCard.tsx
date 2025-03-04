@@ -84,7 +84,7 @@ const PremiumCard = ({
           </div>
         </div>
         
-        <Link to="/deals">
+        <Link to={`/deals`}>
           <Button 
             className="w-full bg-white text-black hover:bg-luxury-gold transition-colors duration-300"
           >

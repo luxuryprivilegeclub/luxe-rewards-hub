@@ -6,8 +6,9 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PremiumCard from '@/components/PremiumCard';
 import ScrollAnimation from '@/components/ScrollAnimation';
-import { getDatabase } from '@/utils/database';
+import { supabase } from '@/integrations/supabase/client';
 import { Deal } from '@/components/admin/types';
+import { toast } from "sonner";
 
 const Deals = () => {
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -15,15 +16,36 @@ const Deals = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Fetch deals from database
+  // Fetch deals directly from Supabase
   useEffect(() => {
     const fetchDeals = async () => {
       setLoading(true);
       try {
-        const db = await getDatabase();
-        setDeals(db.deals || []);
+        const { data, error } = await supabase
+          .from('deals')
+          .select('*');
+        
+        if (error) {
+          throw error;
+        }
+
+        // Map Supabase data to Deal type
+        const formattedDeals = data.map((deal): Deal => ({
+          id: deal.id,
+          title: deal.title,
+          location: deal.location,
+          imageUrl: deal.image_url,
+          regularPrice: deal.regular_price,
+          memberPrice: deal.member_price,
+          discount: deal.discount,
+          rating: deal.rating,
+          description: deal.description
+        }));
+
+        setDeals(formattedDeals);
       } catch (error) {
         console.error('Error fetching deals:', error);
+        toast.error("Failed to load deals. Please try again later.");
       } finally {
         setLoading(false);
       }
