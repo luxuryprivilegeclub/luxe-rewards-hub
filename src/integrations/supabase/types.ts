@@ -9,6 +9,59 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          amount: number
+          check_in_date: string
+          check_out_date: string
+          created_at: string | null
+          deal_id: number | null
+          deal_title: string
+          email: string
+          guests: number
+          id: number
+          name: string
+          phone: string
+          status: string
+        }
+        Insert: {
+          amount: number
+          check_in_date: string
+          check_out_date: string
+          created_at?: string | null
+          deal_id?: number | null
+          deal_title: string
+          email: string
+          guests: number
+          id?: number
+          name: string
+          phone: string
+          status: string
+        }
+        Update: {
+          amount?: number
+          check_in_date?: string
+          check_out_date?: string
+          created_at?: string | null
+          deal_id?: number | null
+          deal_title?: string
+          email?: string
+          guests?: number
+          id?: number
+          name?: string
+          phone?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deals: {
         Row: {
           description: string

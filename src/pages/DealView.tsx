@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -7,7 +6,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, customQuery } from '@/integrations/supabase/client';
 import { Deal } from '@/components/admin/types';
 import { toast } from "sonner";
 import { formatPrice } from '@/utils/database';
@@ -37,7 +36,7 @@ const DealView = () => {
         const { data, error } = await supabase
           .from('deals')
           .select('*')
-          .eq('id', id)
+          .eq('id', parseInt(id))
           .single();
         
         if (error) {
@@ -79,8 +78,7 @@ const DealView = () => {
     
     try {
       // Save booking to Supabase
-      const { error } = await supabase
-        .from('bookings')
+      const { error } = await customQuery('bookings')
         .insert({
           deal_id: deal.id,
           deal_title: deal.title,

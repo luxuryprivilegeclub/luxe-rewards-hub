@@ -40,6 +40,21 @@ export interface Member {
   points: number;
 }
 
+export interface Booking {
+  id?: number;
+  deal_id: number;
+  deal_title: string;
+  name: string;
+  email: string;
+  phone: string;
+  check_in_date: string;
+  check_out_date: string;
+  guests: number;
+  amount: number;
+  status: string;
+  created_at?: string;
+}
+
 export interface Settings {
   siteTitle: string;
   siteTagline: string;
@@ -52,5 +67,6 @@ export interface Database {
   deals: Deal[];
   tourPackages: TourPackage[];
   members: Member[];
+  bookings: Booking[];
   settings: Settings;
 }

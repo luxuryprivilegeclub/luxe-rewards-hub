@@ -1,5 +1,6 @@
-import { supabase } from "@/integrations/supabase/client";
-import { Database, Settings, Deal, TourPackage, Member, Page } from "@/components/admin/types";
+
+import { supabase, customQuery } from "@/integrations/supabase/client";
+import { Database, Settings, Deal, TourPackage, Member, Page, Booking } from "@/components/admin/types";
 
 // Initialize data in the database if it doesn't exist already
 export const initLocalDatabase = async () => {
@@ -11,12 +12,13 @@ export const initLocalDatabase = async () => {
 export const getDatabase = async (): Promise<Database> => {
   try {
     // Fetch all data from Supabase
-    const [pagesResult, dealsResult, tourPackagesResult, membersResult, settingsResult] = await Promise.all([
+    const [pagesResult, dealsResult, tourPackagesResult, membersResult, settingsResult, bookingsResult] = await Promise.all([
       supabase.from('pages').select('*'),
       supabase.from('deals').select('*'),
       supabase.from('tour_packages').select('*'),
       supabase.from('members').select('*'),
-      supabase.from('settings').select('*')
+      supabase.from('settings').select('*'),
+      customQuery('bookings').select('*')
     ]);
 
     // Check for errors
@@ -25,6 +27,7 @@ export const getDatabase = async (): Promise<Database> => {
     if (tourPackagesResult.error) throw new Error(`Error fetching tour packages: ${tourPackagesResult.error.message}`);
     if (membersResult.error) throw new Error(`Error fetching members: ${membersResult.error.message}`);
     if (settingsResult.error) throw new Error(`Error fetching settings: ${settingsResult.error.message}`);
+    if (bookingsResult.error) throw new Error(`Error fetching bookings: ${bookingsResult.error.message}`);
 
     // Map database columns to camelCase for frontend
     const pages = pagesResult.data.map((page): Page => ({
@@ -68,6 +71,22 @@ export const getDatabase = async (): Promise<Database> => {
       points: member.points
     }));
 
+    // Map bookings data
+    const bookings = bookingsResult.data ? bookingsResult.data.map((booking): Booking => ({
+      id: booking.id,
+      deal_id: booking.deal_id,
+      deal_title: booking.deal_title,
+      name: booking.name,
+      email: booking.email,
+      phone: booking.phone,
+      check_in_date: booking.check_in_date,
+      check_out_date: booking.check_out_date,
+      guests: booking.guests,
+      amount: booking.amount,
+      status: booking.status,
+      created_at: booking.created_at
+    })) : [];
+
     // Settings should only have one row, so use the first one
     const settingsData = settingsResult.data[0] || {
       site_title: "Luxury Privilege Club",
@@ -89,6 +108,7 @@ export const getDatabase = async (): Promise<Database> => {
       deals,
       tourPackages,
       members,
+      bookings,
       settings
     };
   } catch (error) {
@@ -99,6 +119,7 @@ export const getDatabase = async (): Promise<Database> => {
       deals: [],
       tourPackages: [],
       members: [],
+      bookings: [],
       settings: {
         siteTitle: "Luxury Privilege Club",
         siteTagline: "Pakistan's Premium Hotel Loyalty Program",
@@ -251,8 +272,7 @@ export const saveDatabase = async (data: Database) => {
 // Delete operations
 export const deleteResource = async (table: string, id: number) => {
   try {
-    const { error } = await supabase
-      .from(table)
+    const { error } = await customQuery(table)
       .delete()
       .eq('id', id);
     

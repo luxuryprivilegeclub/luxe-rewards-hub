@@ -1,46 +1,34 @@
-
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import Navbar from '@/components/Navbar';
-import HeroSection from '@/components/HeroSection';
-import BrandsCarousel from '@/components/BrandsCarousel';
-import PrivilegesSection from '@/components/PrivilegesSection';
-import PremiumCard from '@/components/PremiumCard';
 import Footer from '@/components/Footer';
+import HeroSection from '@/components/HeroSection';
+import PremiumCard from '@/components/PremiumCard';
 import ScrollAnimation from '@/components/ScrollAnimation';
-import { Button } from '@/components/ui/button';
-import JoinNowForm from '@/components/JoinNowForm';
 import { supabase } from '@/integrations/supabase/client';
 import { Deal, TourPackage } from '@/components/admin/types';
-import { toast } from "sonner";
 
 const Index = () => {
-  const [exclusiveDeals, setExclusiveDeals] = useState<Deal[]>([]);
-  const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
+  const [featuredDeals, setFeaturedDeals] = useState<Deal[]>([]);
+  const [featuredTours, setFeaturedTours] = useState<TourPackage[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch deals and tour packages from Supabase
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchFeatured = async () => {
       setLoading(true);
       try {
-        // Fetch deals
+        // Fetch featured deals
         const { data: dealsData, error: dealsError } = await supabase
           .from('deals')
           .select('*')
           .limit(4);
-        
-        if (dealsError) throw dealsError;
 
-        // Fetch tour packages
-        const { data: packagesData, error: packagesError } = await supabase
-          .from('tour_packages')
-          .select('*')
-          .limit(4);
-        
-        if (packagesError) throw packagesError;
+        if (dealsError) {
+          throw dealsError;
+        }
 
-        // Format deals data
         const formattedDeals = dealsData.map((deal): Deal => ({
           id: deal.id,
           title: deal.title,
@@ -53,114 +41,77 @@ const Index = () => {
           description: deal.description
         }));
 
-        // Format tour packages data
-        const formattedPackages = packagesData.map((pkg): TourPackage => ({
-          id: pkg.id,
-          title: pkg.title,
-          location: pkg.location,
-          imageUrl: pkg.image_url,
-          regularPrice: pkg.regular_price,
-          memberPrice: pkg.member_price,
-          discount: pkg.discount,
-          rating: pkg.rating,
-          description: pkg.description
+        setFeaturedDeals(formattedDeals);
+
+        // Fetch featured tours
+        const { data: toursData, error: toursError } = await supabase
+          .from('tour_packages')
+          .select('*')
+          .limit(4);
+
+        if (toursError) {
+          throw toursError;
+        }
+
+        const formattedTours = toursData.map((tour): TourPackage => ({
+          id: tour.id,
+          title: tour.title,
+          location: tour.location,
+          imageUrl: tour.image_url,
+          regularPrice: tour.regular_price,
+          memberPrice: tour.member_price,
+          discount: tour.discount,
+          rating: tour.rating,
+          description: tour.description
         }));
 
-        setExclusiveDeals(formattedDeals);
-        setTourPackages(formattedPackages);
+        setFeaturedTours(formattedTours);
       } catch (error) {
-        console.error('Error fetching data:', error);
-        toast.error("Failed to load data. Please try again later.");
+        console.error('Error fetching featured content:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, []);
-
-  // Scroll reveal function
-  useEffect(() => {
-    const handleScroll = () => {
-      const reveals = document.querySelectorAll('.reveal');
-      
-      reveals.forEach(reveal => {
-        const revealTop = reveal.getBoundingClientRect().top;
-        const windowHeight = window.innerHeight;
-        const revealPoint = 150;
-        
-        if (revealTop < windowHeight - revealPoint) {
-          reveal.classList.add('active');
-        }
-      });
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    // Trigger once on load
-    handleScroll();
-    
-    return () => window.removeEventListener('scroll', handleScroll);
+    fetchFeatured();
   }, []);
 
   return (
     <div className="app-container">
+      <Helmet>
+        <title>Luxury Privilege Club | Pakistan's Premium Hotel Loyalty Program</title>
+      </Helmet>
+      
       <Navbar />
       
       <main>
+        {/* Hero section */}
         <HeroSection />
         
-        <BrandsCarousel />
-        
-        <PrivilegesSection />
-        
-        {/* Video Section - adjusted height */}
-        <section className="py-20 bg-luxury-rich-black">
+        {/* Featured Deals Section */}
+        <section className="py-16 md:py-24 bg-luxury-rich-black relative">
           <div className="container mx-auto px-4 md:px-6">
-            <ScrollAnimation type="fadeIn" className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-display font-medium mb-3">
-                <span className="text-luxury-gradient">Experience Luxury</span>
-              </h2>
-              <p className="text-white/70 max-w-2xl mx-auto">
-                Watch how our premium membership transforms your hotel booking experience.
-              </p>
-            </ScrollAnimation>
-            
-            <ScrollAnimation type="scale" className="max-w-4xl mx-auto">
-              <div className="relative pb-[56.25%] h-0 overflow-hidden rounded-lg border border-luxury-gold/20 shadow-[0_8px_30px_rgb(0,0,0,0.5)]">
-                <iframe 
-                  className="absolute top-0 left-0 w-full h-full"
-                  src="https://www.youtube.com/embed/zvP-BoDL9I0" 
-                  title="Premium Hotel Experience" 
-                  frameBorder="0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                  allowFullScreen
-                ></iframe>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
+              <div className="mb-6 md:mb-0">
+                <h2 className="text-3xl md:text-4xl font-display text-white mb-3">
+                  Exclusive <span className="text-luxury-gradient">Hotel Deals</span>
+                </h2>
+                <p className="text-white/70 md:text-lg">
+                  Handpicked luxury hotel experiences at member-only prices
+                </p>
               </div>
-            </ScrollAnimation>
-          </div>
-        </section>
-        
-        {/* Exclusive Deals Section */}
-        <section className="py-20 bg-black">
-          <div className="container mx-auto px-4 md:px-6">
-            <ScrollAnimation type="fadeIn" className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-display font-medium mb-3">
-                <span className="text-luxury-gradient">Exclusive Deals</span>
-              </h2>
-              <p className="text-white/70 max-w-2xl mx-auto">
-                Discover our exclusive hotel deals with privileged member rates below market prices.
-              </p>
-            </ScrollAnimation>
+              <Link to="/deals" className="group inline-flex items-center text-luxury-gold hover:text-white transition-colors">
+                <span className="mr-2">View All Deals</span>
+                <ArrowRight size={18} className="transform group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
             
-            {loading ? (
-              <div className="flex justify-center items-center h-40">
-                <div className="w-12 h-12 border-4 border-luxury-gold/30 border-t-luxury-gold rounded-full animate-spin"></div>
-              </div>
-            ) : exclusiveDeals.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-                {exclusiveDeals.map((deal, index) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {featuredDeals.length > 0 ? (
+                featuredDeals.map((deal, index) => (
                   <ScrollAnimation key={deal.id} type="scale" delay={index * 100}>
                     <PremiumCard
+                      id={deal.id || 0}
                       title={deal.title}
                       location={deal.location}
                       imageUrl={deal.imageUrl}
@@ -170,48 +121,157 @@ const Index = () => {
                       discount={deal.discount}
                     />
                   </ScrollAnimation>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-white/70 text-lg">No deals available at the moment. Please check back later.</p>
-              </div>
-            )}
+                ))
+              ) : (
+                <>
+                  {/* Placeholder cards while loading */}
+                  {[1, 2, 3, 4].map(index => (
+                    <div key={index} className="rounded-xl overflow-hidden bg-black/50 animate-pulse">
+                      <div className="h-52 bg-black/70"></div>
+                      <div className="p-4">
+                        <div className="h-6 bg-black/70 mb-2"></div>
+                        <div className="h-4 bg-black/70 mb-4"></div>
+                        <div className="h-10 bg-black/70"></div>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          </div>
+        </section>
+        
+        {/* Privileges Section */}
+        <section className="py-16 md:py-24 bg-black relative">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-display text-white mb-3">
+                Unlock Exclusive <span className="text-luxury-gradient">Privileges</span>
+              </h2>
+              <p className="text-white/70 md:text-lg">
+                As a member, enjoy a world of unparalleled luxury and bespoke services
+              </p>
+            </div>
             
-            <div className="text-center mt-12">
-              <Link to="/deals">
-                <Button 
-                  variant="outline" 
-                  className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold"
-                >
-                  View All Deals
-                </Button>
-              </Link>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {/* Privilege Card 1 */}
+              <div className="bg-luxury-rich-black rounded-xl p-6 hover:shadow-[0_8px_30px_rgba(184,134,11,0.1)] transition-shadow duration-300">
+                <div className="w-16 h-16 rounded-full bg-luxury-gold/20 flex items-center justify-center mb-4">
+                  {/* Icon */}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFD700" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-concierge-bell"><path d="M2 3v3"/><path d="M22 3v3"/><path d="M2 6h20"/><path d="M12 6v11"/><path d="M5 17h14"/><path d="M5 21h14"/><path d="M8 6a4 4 0 0 1 8 0"/></svg>
+                </div>
+                <h3 className="text-xl font-medium text-white mb-2">Dedicated Concierge</h3>
+                <p className="text-white/70">Personalized assistance for all your travel needs, from booking to itinerary planning.</p>
+              </div>
+              
+              {/* Privilege Card 2 */}
+              <div className="bg-luxury-rich-black rounded-xl p-6 hover:shadow-[0_8px_30px_rgba(184,134,11,0.1)] transition-shadow duration-300">
+                <div className="w-16 h-16 rounded-full bg-luxury-gold/20 flex items-center justify-center mb-4">
+                  {/* Icon */}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFD700" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-gem"><path d="M6 3h12l6 8-6 8H6L0 11Z"/><path d="M6 3v4"/><path d="M18 3v4"/><path d="M6 19v-4"/><path d="M18 19v-4"/></svg>
+                </div>
+                <h3 className="text-xl font-medium text-white mb-2">Exclusive Events</h3>
+                <p className="text-white/70">Invitations to private events, galas, and cultural experiences around the globe.</p>
+              </div>
+              
+              {/* Privilege Card 3 */}
+              <div className="bg-luxury-rich-black rounded-xl p-6 hover:shadow-[0_8px_30px_rgba(184,134,11,0.1)] transition-shadow duration-300">
+                <div className="w-16 h-16 rounded-full bg-luxury-gold/20 flex items-center justify-center mb-4">
+                  {/* Icon */}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFD700" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-hand-coins"><path d="M17 6h5"/><path d="M2 18h5"/><path d="M6 14.83A2 2 0 1 0 7.83 13 2 2 0 0 0 6 14.83z"/><path d="M18 14.83A2 2 0 1 0 19.83 13 2 2 0 0 0 18 14.83z"/><path d="M12 14.83A2 2 0 1 0 13.83 13 2 2 0 0 0 12 14.83z"/><path d="M8.6 8.64A9 9 0 1 1 15.36 15.4"/></svg>
+                </div>
+                <h3 className="text-xl font-medium text-white mb-2">Loyalty Rewards</h3>
+                <p className="text-white/70">Earn points with every booking and redeem them for upgrades, free nights, and more.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        {/* Testimonials Section */}
+        <section className="py-16 md:py-24 bg-luxury-rich-black relative">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-display text-white mb-3">
+                What Our <span className="text-luxury-gradient">Members Say</span>
+              </h2>
+              <p className="text-white/70 md:text-lg">
+                Real stories from our valued members who have experienced the luxury difference
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {/* Testimonial Card 1 */}
+              <div className="bg-black rounded-xl p-6 hover:shadow-[0_8px_30px_rgba(184,134,11,0.1)] transition-shadow duration-300">
+                <p className="text-white/80 italic mb-4">"The concierge service is exceptional. They anticipated my needs and made my trip seamless and stress-free."</p>
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-full bg-luxury-gold/20 mr-4">
+                    {/* Member Avatar */}
+                    <img src="https://i.pravatar.cc/150?img=7" alt="Member Avatar" className="w-full h-full object-cover rounded-full" loading="lazy" />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-medium">Aisha Khan</h4>
+                    <p className="text-white/60 text-sm">Lahore, Pakistan</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Testimonial Card 2 */}
+              <div className="bg-black rounded-xl p-6 hover:shadow-[0_8px_30px_rgba(184,134,11,0.1)] transition-shadow duration-300">
+                <p className="text-white/80 italic mb-4">"I've discovered hotels I never knew existed, all at incredible member-only prices. It's truly a game-changer for luxury travel."</p>
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-full bg-luxury-gold/20 mr-4">
+                    {/* Member Avatar */}
+                    <img src="https://i.pravatar.cc/150?img=11" alt="Member Avatar" className="w-full h-full object-cover rounded-full" loading="lazy" />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-medium">Omar Farooq</h4>
+                    <p className="text-white/60 text-sm">Karachi, Pakistan</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Testimonial Card 3 */}
+              <div className="bg-black rounded-xl p-6 hover:shadow-[0_8px_30px_rgba(184,134,11,0.1)] transition-shadow duration-300">
+                <p className="text-white/80 italic mb-4">"The exclusive events are a highlight. I've met fascinating people and experienced unforgettable moments thanks to this club."</p>
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-full bg-luxury-gold/20 mr-4">
+                    {/* Member Avatar */}
+                    <img src="https://i.pravatar.cc/150?img=22" alt="Member Avatar" className="w-full h-full object-cover rounded-full" loading="lazy" />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-medium">Fatima Khan</h4>
+                    <p className="text-white/60 text-sm">Islamabad, Pakistan</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
         
         {/* Tour Packages Section */}
-        <section className="py-20 bg-luxury-rich-black">
+        <section className="py-16 md:py-24 bg-black relative">
           <div className="container mx-auto px-4 md:px-6">
-            <ScrollAnimation type="fadeIn" className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-display font-medium mb-3">
-                <span className="text-luxury-gradient">Tour Packages</span>
-              </h2>
-              <p className="text-white/70 max-w-2xl mx-auto">
-                Explore our exclusive tour packages with special member prices and unforgettable experiences.
-              </p>
-            </ScrollAnimation>
-            
-            {loading ? (
-              <div className="flex justify-center items-center h-40">
-                <div className="w-12 h-12 border-4 border-luxury-gold/30 border-t-luxury-gold rounded-full animate-spin"></div>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
+              <div className="mb-6 md:mb-0">
+                <h2 className="text-3xl md:text-4xl font-display text-white mb-3">
+                  Luxury <span className="text-luxury-gradient">Tour Packages</span>
+                </h2>
+                <p className="text-white/70 md:text-lg">
+                  Discover Pakistan with our exclusive guided tour experiences
+                </p>
               </div>
-            ) : tourPackages.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-                {tourPackages.map((tour, index) => (
+              <Link to="/tours" className="group inline-flex items-center text-luxury-gold hover:text-white transition-colors">
+                <span className="mr-2">View All Tours</span>
+                <ArrowRight size={18} className="transform group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {featuredTours.length > 0 ? (
+                featuredTours.map((tour, index) => (
                   <ScrollAnimation key={tour.id} type="scale" delay={index * 100}>
                     <PremiumCard
+                      id={tour.id || 0}
                       title={tour.title}
                       location={tour.location}
                       imageUrl={tour.imageUrl}
@@ -221,129 +281,40 @@ const Index = () => {
                       discount={tour.discount}
                     />
                   </ScrollAnimation>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-white/70 text-lg">No tour packages available at the moment. Please check back later.</p>
-              </div>
-            )}
-            
-            <div className="text-center mt-12">
-              <Link to="/tours">
-                <Button 
-                  variant="outline" 
-                  className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold"
-                >
-                  View All Tour Packages
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
-        
-        {/* Membership Benefits */}
-        <section className="py-20 bg-gradient-to-b from-black to-luxury-rich-black">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="flex flex-col lg:flex-row items-center gap-12">
-              <div className="lg:w-1/2">
-                <ScrollAnimation type="slideUp" className="relative">
-                  <div className="relative rounded-xl overflow-hidden shadow-2xl border border-luxury-gold/10">
-                    <img 
-                      src="https://images.unsplash.com/photo-1445019980597-93fa8acb246c?q=80&w=1774&auto=format&fit=crop" 
-                      alt="Premium Membership" 
-                      className="w-full h-[500px] object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-tr from-black/80 via-black/40 to-transparent"></div>
-                    
-                    {/* Floating card */}
-                    <div className="absolute bottom-6 left-6 right-6 glass-card p-6 rounded-lg backdrop-blur-md">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-luxury-gold font-display font-medium">Premium Membership</h4>
-                        <div className="flex">
-                          {[1, 2, 3, 4, 5].map((_, i) => (
-                            <div key={i} className="w-2 h-2 rounded-full bg-luxury-gold mx-0.5"></div>
-                          ))}
-                        </div>
+                ))
+              ) : (
+                <>
+                  {/* Placeholder cards while loading */}
+                  {[1, 2, 3, 4].map(index => (
+                    <div key={index} className="rounded-xl overflow-hidden bg-black/50 animate-pulse">
+                      <div className="h-52 bg-black/70"></div>
+                      <div className="p-4">
+                        <div className="h-6 bg-black/70 mb-2"></div>
+                        <div className="h-4 bg-black/70 mb-4"></div>
+                        <div className="h-10 bg-black/70"></div>
                       </div>
-                      <p className="text-white/80 text-sm">Join now to access privileged rates and exclusive benefits.</p>
                     </div>
-                  </div>
-                </ScrollAnimation>
-              </div>
-              
-              <div className="lg:w-1/2">
-                <ScrollAnimation type="fadeIn">
-                  <span className="inline-block px-3 py-1 text-xs bg-luxury-gold/20 text-luxury-gold font-medium rounded-full mb-4">
-                    Membership Benefits
-                  </span>
-                  
-                  <h2 className="text-3xl md:text-4xl font-display font-medium mb-6">
-                    Join Our <span className="text-luxury-gradient">Elite Loyalty Program</span>
-                  </h2>
-                  
-                  <p className="text-white/70 mb-8">
-                    Our membership program is designed to offer you exceptional value with every hotel booking.
-                    Join now to enjoy reduced rates, luxury privileges, and a rewarding points system.
-                  </p>
-                  
-                  <div className="space-y-4 mb-8">
-                    {[
-                      "Guaranteed lowest rates compared to OTAs",
-                      "Earn loyalty points with every booking",
-                      "Exclusive members-only promotions",
-                      "24/7 dedicated customer support",
-                      "No booking fees or hidden charges"
-                    ].map((benefit, index) => (
-                      <div key={index} className="flex items-center">
-                        <div className="w-5 h-5 rounded-full bg-luxury-gold/20 flex items-center justify-center mr-3">
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M10 3L4.5 8.5L2 6" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </div>
-                        <span className="text-white/80">{benefit}</span>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <JoinNowForm />
-                </ScrollAnimation>
-              </div>
+                  ))}
+                </>
+              )}
             </div>
           </div>
         </section>
         
-        {/* CTA Section */}
-        <section className="py-16 bg-black relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?q=80&w=1770&auto=format&fit=crop')] bg-cover bg-center opacity-20"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/90 to-black/80"></div>
-          
-          <div className="container mx-auto px-4 md:px-6 relative z-10">
-            <div className="max-w-3xl mx-auto text-center">
-              <ScrollAnimation type="fadeIn">
-                <h2 className="text-3xl md:text-4xl font-display font-medium mb-4">
-                  Ready to Experience <span className="text-luxury-gradient">Premium Benefits?</span>
-                </h2>
-                
-                <p className="text-white/70 mb-8">
-                  Join Pakistan's leading hotel rewards program today and start enjoying exclusive rates 
-                  and luxury privileges at top hotels worldwide.
-                </p>
-                
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <JoinNowForm />
-                  <Link to="/about">
-                    <Button 
-                      size="lg" 
-                      variant="outline" 
-                      className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold font-medium min-w-[160px]"
-                    >
-                      Learn More
-                    </Button>
-                  </Link>
-                </div>
-              </ScrollAnimation>
-            </div>
+        {/* Call to Action Section */}
+        <section className="py-24 bg-luxury-rich-black relative">
+          <div className="container mx-auto px-4 md:px-6 text-center">
+            <h2 className="text-4xl md:text-5xl font-display text-white mb-6">
+              Ready to Experience <span className="text-luxury-gradient">Luxury?</span>
+            </h2>
+            <p className="text-white/70 md:text-lg mb-8">
+              Join the Luxury Privilege Club today and unlock a world of exclusive benefits.
+            </p>
+            <Link to="/register">
+              <button className="bg-luxury-gold hover:bg-luxury-dark-gold text-black font-semibold py-3 px-8 rounded-full transition-colors duration-300">
+                Become a Member
+              </button>
+            </Link>
           </div>
         </section>
       </main>
