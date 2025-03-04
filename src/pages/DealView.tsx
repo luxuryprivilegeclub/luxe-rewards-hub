@@ -1,22 +1,27 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { Calendar, MapPin, CreditCard, Star, Check } from 'lucide-react';
+import { MapPin, CreditCard, Star, Check, MessageCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { supabase, customQuery } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { Deal } from '@/components/admin/types';
 import { toast } from "sonner";
 import { formatPrice } from '@/utils/database';
+import PremiumCard from '@/components/PremiumCard';
+import ScrollAnimation from '@/components/ScrollAnimation';
 
 const DealView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [deal, setDeal] = useState<Deal | null>(null);
+  const [relatedDeals, setRelatedDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
+  const [isSupportDialogOpen, setIsSupportDialogOpen] = useState(false);
   const [bookingName, setBookingName] = useState('');
   const [bookingEmail, setBookingEmail] = useState('');
   const [bookingPhone, setBookingPhone] = useState('');
@@ -24,6 +29,8 @@ const DealView = () => {
   const [checkOutDate, setCheckOutDate] = useState('');
   const [bookingGuests, setBookingGuests] = useState(1);
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
+  const [supportMessage, setSupportMessage] = useState('');
+  const [supportSubmitting, setSupportSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchDeal = async () => {
@@ -57,6 +64,33 @@ const DealView = () => {
         };
 
         setDeal(dealData);
+
+        // Fetch related deals (same location)
+        const { data: relatedData, error: relatedError } = await supabase
+          .from('deals')
+          .select('*')
+          .eq('location', data.location)
+          .neq('id', parseInt(id))
+          .limit(4);
+        
+        if (relatedError) {
+          console.error('Error fetching related deals:', relatedError);
+        } else {
+          // Map to Deal type
+          const relatedDealsData = relatedData.map((d): Deal => ({
+            id: d.id,
+            title: d.title,
+            location: d.location,
+            imageUrl: d.image_url,
+            regularPrice: d.regular_price,
+            memberPrice: d.member_price,
+            discount: d.discount,
+            rating: d.rating,
+            description: d.description
+          }));
+          
+          setRelatedDeals(relatedDealsData);
+        }
       } catch (error) {
         console.error('Error fetching deal:', error);
         toast.error("Failed to load deal details. Please try again later.");
@@ -78,7 +112,8 @@ const DealView = () => {
     
     try {
       // Save booking to Supabase
-      const { error } = await customQuery('bookings')
+      const { error } = await supabase
+        .from('bookings')
         .insert({
           deal_id: deal.id,
           deal_title: deal.title,
@@ -109,6 +144,28 @@ const DealView = () => {
       toast.error("Failed to submit booking. Please try again.");
     } finally {
       setBookingSubmitting(false);
+    }
+  };
+
+  const handleSupportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!deal) return;
+    
+    setSupportSubmitting(true);
+    
+    try {
+      // Simulate sending support request
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success("Support request submitted! Our agent will contact you shortly.");
+      setIsSupportDialogOpen(false);
+      setSupportMessage('');
+    } catch (error) {
+      console.error('Error submitting support request:', error);
+      toast.error("Failed to submit support request. Please try again.");
+    } finally {
+      setSupportSubmitting(false);
     }
   };
 
@@ -219,6 +276,23 @@ const DealView = () => {
                   <li>Membership card must be presented at check-in</li>
                 </ul>
               </div>
+              
+              {/* Talk to Support Button */}
+              <div className="bg-black/50 backdrop-blur-sm p-6 md:p-8 rounded-xl border border-white/10 mb-8">
+                <div className="flex flex-col md:flex-row items-center justify-between">
+                  <div className="mb-4 md:mb-0">
+                    <h3 className="text-xl font-display text-white mb-2">Need assistance with this deal?</h3>
+                    <p className="text-white/70">Our support agents are ready to help with any questions</p>
+                  </div>
+                  <Button 
+                    onClick={() => setIsSupportDialogOpen(true)}
+                    className="bg-white/10 hover:bg-white/20 border border-luxury-gold/50 text-luxury-gold flex items-center gap-2"
+                  >
+                    <MessageCircle size={18} />
+                    Talk to Support
+                  </Button>
+                </div>
+              </div>
             </div>
             
             {/* Right Column - Booking Card */}
@@ -274,6 +348,35 @@ const DealView = () => {
             </div>
           </div>
         </div>
+        
+        {/* Featured Deals Section */}
+        {relatedDeals.length > 0 && (
+          <section className="py-16 bg-luxury-rich-black/60 border-t border-white/10">
+            <div className="container mx-auto px-4">
+              <h2 className="text-3xl font-display font-medium text-white mb-10 text-center">
+                <span className="text-luxury-gradient">Featured Deals in {deal.location}</span>
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-12">
+                {relatedDeals.map((relatedDeal, index) => (
+                  <ScrollAnimation key={relatedDeal.id} type="scale" delay={index * 100}>
+                    <PremiumCard
+                      id={relatedDeal.id || 0}
+                      title={relatedDeal.title}
+                      location={relatedDeal.location}
+                      imageUrl={relatedDeal.imageUrl}
+                      regularPrice={relatedDeal.regularPrice}
+                      memberPrice={relatedDeal.memberPrice}
+                      rating={relatedDeal.rating}
+                      discount={relatedDeal.discount}
+                      className="h-full"
+                    />
+                  </ScrollAnimation>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
         
         {/* Booking Dialog */}
         <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
@@ -379,6 +482,50 @@ const DealView = () => {
                     </div>
                   ) : (
                     'Confirm Booking'
+                  )}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Support Dialog */}
+        <Dialog open={isSupportDialogOpen} onOpenChange={setIsSupportDialogOpen}>
+          <DialogContent className="bg-black/95 border-white/20 text-white max-w-xl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-display text-luxury-gold">Talk to Support</DialogTitle>
+              <DialogDescription className="text-white/70">
+                Submit your question about {deal.title} and our agents will get back to you
+              </DialogDescription>
+            </DialogHeader>
+            
+            <form onSubmit={handleSupportSubmit} className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <label htmlFor="supportMessage" className="text-white/80 block text-sm">Your Message</label>
+                <textarea
+                  id="supportMessage"
+                  value={supportMessage}
+                  onChange={(e) => setSupportMessage(e.target.value)}
+                  required
+                  placeholder="I have a question about this deal..."
+                  rows={4}
+                  className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-luxury-gold/50"
+                />
+              </div>
+              
+              <div className="pt-4">
+                <Button
+                  type="submit"
+                  className="w-full bg-luxury-gold text-black hover:bg-luxury-gold/80 py-6"
+                  disabled={supportSubmitting}
+                >
+                  {supportSubmitting ? (
+                    <div className="flex items-center justify-center">
+                      <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin mr-2"></div>
+                      Submitting...
+                    </div>
+                  ) : (
+                    'Send Message'
                   )}
                 </Button>
               </div>

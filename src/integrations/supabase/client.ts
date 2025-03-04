@@ -12,6 +12,6 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 // Custom method to access tables not included in the type definition
-export const customQuery = (tableName: string) => {
+export const customQuery = (tableName: 'bookings' | 'deals' | 'members' | 'pages' | 'settings' | 'tour_packages') => {
   return supabase.from(tableName);
 };
