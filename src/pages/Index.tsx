@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -9,6 +10,7 @@ import PrivilegesSection from "@/components/PrivilegesSection";
 import TourPackagesSection from "@/components/TourPackagesSection";
 import JoinNowForm from "@/components/JoinNowForm";
 import ScrollAnimation from "@/components/ScrollAnimation";
+import MembersTestimony from "@/components/MembersTestimony";
 import { getDatabase, formatPrice } from "@/utils/database";
 import { Check } from "lucide-react";
 import { Settings } from "@/components/admin/types";
@@ -60,8 +62,44 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      {/* 1. Header Section */}
       <Navbar />
       <HeroSection />
+      
+      {/* 2. Global Partnership Section */}
+      <ScrollAnimation>
+        <BrandsCarousel />
+      </ScrollAnimation>
+      
+      {/* 3. Exclusive Privileges Section */}
+      <ScrollAnimation>
+        <PrivilegesSection />
+      </ScrollAnimation>
+      
+      {/* 4. Video Section */}
+      <ScrollAnimation>
+        <div className="py-16 bg-black">
+          <div className="max-w-7xl mx-auto px-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-center mb-4">Explore Our <span className="text-luxury-gold">Experience</span></h2>
+            <p className="text-lg text-center text-gray-400 mb-12">See what makes the Luxury Privilege Club special</p>
+            
+            <div className="rounded-2xl overflow-hidden aspect-video md:h-[500px]">
+              <iframe 
+                width="100%" 
+                height="100%" 
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                title="Luxury Privilege Club Experience" 
+                frameBorder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen
+                className="w-full h-full"
+              ></iframe>
+            </div>
+          </div>
+        </div>
+      </ScrollAnimation>
+      
+      {/* 5. Hotel Deals Section */}
       <ScrollAnimation>
         <div className="max-w-7xl mx-auto px-4 py-16">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-4">Premium Hotel <span className="text-luxury-gold">Discounts</span></h2>
@@ -88,31 +126,18 @@ const Index = () => {
           </div>
         </div>
       </ScrollAnimation>
-
-      {/* Video Section */}
+      
+      {/* 6. Tour Package Deals Section */}
       <ScrollAnimation>
-        <div className="py-16 bg-black">
-          <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-4xl md:text-5xl font-bold text-center mb-4">Explore Our <span className="text-luxury-gold">Experience</span></h2>
-            <p className="text-lg text-center text-gray-400 mb-12">See what makes the Luxury Privilege Club special</p>
-            
-            <div className="rounded-2xl overflow-hidden aspect-video">
-              <iframe 
-                width="100%" 
-                height="100%" 
-                src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
-                title="Luxury Privilege Club Experience" 
-                frameBorder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowFullScreen
-                className="w-full h-full"
-              ></iframe>
-            </div>
-          </div>
-        </div>
+        <TourPackagesSection />
       </ScrollAnimation>
-
-      {/* Membership Plans Section */}
+      
+      {/* 7. Members Testimony Section */}
+      <ScrollAnimation>
+        <MembersTestimony />
+      </ScrollAnimation>
+      
+      {/* 8. Membership Plans Section */}
       <ScrollAnimation>
         <div className="py-16 bg-gray-900">
           <div className="max-w-7xl mx-auto px-4">
@@ -245,19 +270,8 @@ const Index = () => {
           </div>
         </div>
       </ScrollAnimation>
-
-      <ScrollAnimation>
-        <PrivilegesSection />
-      </ScrollAnimation>
       
-      <ScrollAnimation>
-        <TourPackagesSection />
-      </ScrollAnimation>
-      
-      <ScrollAnimation>
-        <BrandsCarousel />
-      </ScrollAnimation>
-      
+      {/* 9. Join the Luxury Privilege Club Section with image */}
       <ScrollAnimation>
         <div className="py-16 bg-gray-900">
           <div className="max-w-7xl mx-auto px-4">
@@ -297,14 +311,19 @@ const Index = () => {
                   </li>
                 </ul>
               </div>
-              <div>
-                <JoinNowForm />
+              <div className="relative">
+                <div className="absolute -top-4 -left-4 w-24 h-24 bg-luxury-gold/10 rounded-full blur-2xl"></div>
+                <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-luxury-gold/10 rounded-full blur-2xl"></div>
+                <div className="relative bg-gray-800 rounded-xl overflow-hidden h-full">
+                  <JoinNowForm />
+                </div>
               </div>
             </div>
           </div>
         </div>
       </ScrollAnimation>
       
+      {/* 10. Footer Section */}
       <Footer />
     </div>
   );
