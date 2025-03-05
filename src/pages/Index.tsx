@@ -1,21 +1,31 @@
+
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
-import { HeroSection } from "@/components/HeroSection";
-import { PremiumCard } from "@/components/PremiumCard";
-import { BrandsCarousel } from "@/components/BrandsCarousel";
-import { PrivilegesSection } from "@/components/PrivilegesSection";
-import { TourPackagesSection } from "@/components/TourPackagesSection";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import HeroSection from "@/components/HeroSection";
+import PremiumCard from "@/components/PremiumCard";
+import BrandsCarousel from "@/components/BrandsCarousel";
+import PrivilegesSection from "@/components/PrivilegesSection";
+import TourPackagesSection from "@/components/TourPackagesSection";
 import JoinNowForm from "@/components/JoinNowForm";
-import { ScrollAnimation } from "@/components/ScrollAnimation";
+import ScrollAnimation from "@/components/ScrollAnimation";
 import { getDatabase, formatPrice } from "@/utils/database";
 import { Check } from "lucide-react";
+import { Settings } from "@/components/admin/types";
 
 const Index = () => {
   const [deals, setDeals] = useState([]);
   const [premiumOptions, setPremiumOptions] = useState([]);
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<{
+    siteTitle: string;
+    siteTagline: string;
+    currency: string;
+    paymentMethods: string;
+    silverPrice: number;
+    goldPrice: number;
+    platinumPrice: number;
+  }>({
     siteTitle: "Luxury Privilege Club",
     siteTagline: "Pakistan's Premium Hotel Loyalty Program",
     currency: "PKR",
@@ -29,7 +39,16 @@ const Index = () => {
     const fetchData = async () => {
       try {
         const data = await getDatabase();
-        setSettings(data.settings);
+        // Handle optional properties safely with default values
+        setSettings({
+          siteTitle: data.settings.siteTitle || "Luxury Privilege Club",
+          siteTagline: data.settings.siteTagline || "Pakistan's Premium Hotel Loyalty Program",
+          currency: data.settings.currency || "PKR",
+          paymentMethods: data.settings.paymentMethods || "",
+          silverPrice: data.settings.silverPrice || 35000,
+          goldPrice: data.settings.goldPrice || 70000,
+          platinumPrice: data.settings.platinumPrice || 150000
+        });
         setDeals(data.deals.slice(0, 3));
         setPremiumOptions(data.deals.filter(deal => deal.discount >= 20).slice(0, 3));
       } catch (error) {
@@ -67,6 +86,29 @@ const Index = () => {
             <Link to="/deals" className="bg-luxury-gold hover:bg-luxury-dark-gold text-black font-semibold py-3 px-8 rounded-full transition duration-300">
               View All Deals
             </Link>
+          </div>
+        </div>
+      </ScrollAnimation>
+
+      {/* Video Section */}
+      <ScrollAnimation>
+        <div className="py-16 bg-black">
+          <div className="max-w-7xl mx-auto px-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-center mb-4">Explore Our <span className="text-luxury-gold">Experience</span></h2>
+            <p className="text-lg text-center text-gray-400 mb-12">See what makes the Luxury Privilege Club special</p>
+            
+            <div className="rounded-2xl overflow-hidden aspect-video">
+              <iframe 
+                width="100%" 
+                height="100%" 
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                title="Luxury Privilege Club Experience" 
+                frameBorder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen
+                className="w-full h-full"
+              ></iframe>
+            </div>
           </div>
         </div>
       </ScrollAnimation>
@@ -199,29 +241,6 @@ const Index = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </ScrollAnimation>
-
-      {/* Video Section */}
-      <ScrollAnimation>
-        <div className="py-16 bg-black">
-          <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-4xl md:text-5xl font-bold text-center mb-4">Explore Our <span className="text-luxury-gold">Experience</span></h2>
-            <p className="text-lg text-center text-gray-400 mb-12">See what makes the Luxury Privilege Club special</p>
-            
-            <div className="rounded-2xl overflow-hidden aspect-video">
-              <iframe 
-                width="100%" 
-                height="100%" 
-                src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
-                title="Luxury Privilege Club Experience" 
-                frameBorder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowFullScreen
-                className="w-full h-full"
-              ></iframe>
             </div>
           </div>
         </div>
