@@ -1,4 +1,4 @@
-import { supabase, customQuery } from "@/integrations/supabase/client";
+import { supabase, customQuery, updateDeal } from "@/integrations/supabase/client";
 import { Database, Settings, Deal, TourPackage, Member, Page, Booking } from "@/components/admin/types";
 
 // Initialize data in the database if it doesn't exist already
@@ -166,26 +166,14 @@ export const saveDatabase = async (data: Database) => {
       }
     }
 
-    // Save deals
+    // Save deals with improved error handling
     for (const deal of data.deals) {
       if (deal.id) {
-        // Update existing deal
-        await supabase
-          .from('deals')
-          .update({
-            title: deal.title,
-            location: deal.location,
-            image_url: deal.imageUrl,
-            regular_price: deal.regularPrice,
-            member_price: deal.memberPrice,
-            discount: deal.discount,
-            rating: deal.rating,
-            description: deal.description
-          })
-          .eq('id', deal.id);
+        // Update existing deal using the specialized function
+        await updateDeal(deal.id, deal);
       } else {
         // Insert new deal
-        await supabase
+        const { error } = await supabase
           .from('deals')
           .insert({
             title: deal.title,
@@ -197,6 +185,11 @@ export const saveDatabase = async (data: Database) => {
             rating: deal.rating,
             description: deal.description
           });
+          
+        if (error) {
+          console.error("Error inserting deal:", error);
+          throw error;
+        }
       }
     }
 
@@ -277,6 +270,7 @@ export const saveDatabase = async (data: Database) => {
     console.log("Data saved to Supabase successfully");
   } catch (error) {
     console.error("Error saving data to Supabase:", error);
+    throw error; // Rethrow to allow handling by the caller
   }
 };
 

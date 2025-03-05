@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Save, Plus, MapPin, DollarSign, Percent, Star, Image as ImageIcon } from "lucide-react";
+import { toast } from "sonner";
 
 interface Deal {
   id?: number;
@@ -35,6 +35,31 @@ const DealsTab: React.FC<DealsTabProps> = ({
   handleDeleteDeal,
   formatPrice
 }) => {
+  
+  const validateAndSaveDeal = () => {
+    if (!editingDeal) return;
+    
+    // Validate required fields
+    if (!editingDeal.title.trim()) {
+      toast.error("Hotel name is required");
+      return;
+    }
+    
+    if (!editingDeal.location.trim()) {
+      toast.error("Location is required");
+      return;
+    }
+    
+    if (!editingDeal.imageUrl.trim()) {
+      toast.error("Image URL is required");
+      return;
+    }
+    
+    // All validations passed, save the deal
+    console.log("Saving validated deal:", editingDeal);
+    handleSaveDeal(editingDeal);
+  };
+  
   return (
     <div className="space-y-6">
       {editingDeal ? (
@@ -158,7 +183,7 @@ const DealsTab: React.FC<DealsTabProps> = ({
               </Button>
               <Button
                 className="bg-luxury-gold hover:bg-luxury-dark-gold text-black"
-                onClick={() => handleSaveDeal(editingDeal)}
+                onClick={validateAndSaveDeal}
               >
                 <Save className="mr-2 h-4 w-4" /> Save Deal
               </Button>
@@ -209,7 +234,7 @@ const DealsTab: React.FC<DealsTabProps> = ({
                         variant="ghost" 
                         size="sm" 
                         className="text-luxury-gold mr-2"
-                        onClick={() => setEditingDeal(deal)}
+                        onClick={() => setEditingDeal({...deal})}
                       >
                         Edit
                       </Button>

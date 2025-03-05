@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -163,13 +162,18 @@ const Admin = () => {
   // CRUD operations for deals
   const handleSaveDeal = async (deal: Deal) => {
     try {
+      console.log("Saving deal:", deal);
+      
       if (deal.id) {
         // Update existing deal
         const updatedDeals = deals.map(d => 
           d.id === deal.id ? deal : d
         );
+        
+        // First update state
         setDeals(updatedDeals);
         
+        // Then save to database
         await saveDatabase({
           ...await getDatabase(),
           deals: updatedDeals
@@ -179,8 +183,11 @@ const Admin = () => {
       } else {
         // Add new deal
         const newDeals = [...deals, deal];
+        
+        // First update state
         setDeals(newDeals);
         
+        // Then save to database
         await saveDatabase({
           ...await getDatabase(),
           deals: newDeals
@@ -189,10 +196,20 @@ const Admin = () => {
         toast.success(`Deal "${deal.title}" created successfully`);
       }
       
+      // Set editing deal to null after successful save
       setEditingDeal(null);
+      
+      // Refresh the data to ensure we have the latest from the database
+      const db = await getDatabase();
+      setDeals(db.deals || []);
+      
     } catch (error) {
       console.error("Error saving deal:", error);
-      toast.error("Failed to save deal. Please try again.");
+      toast.error(`Failed to save deal: ${error instanceof Error ? error.message : "Unknown error"}`);
+      
+      // Since the save failed, refresh data to restore previous state
+      const db = await getDatabase();
+      setDeals(db.deals || []);
     }
   };
 

@@ -15,3 +15,41 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 export const customQuery = (tableName: 'bookings' | 'deals' | 'members' | 'pages' | 'settings' | 'tour_packages') => {
   return supabase.from(tableName);
 };
+
+// Helper function for cleaner error handling
+export const handleSupabaseError = (error: any, operation: string) => {
+  console.error(`Error in ${operation}:`, error);
+  throw new Error(`${operation} failed: ${error.message}`);
+};
+
+// Specialized function for updating deals
+export const updateDeal = async (dealId: number, dealData: any) => {
+  try {
+    console.log(`Updating deal ${dealId} with data:`, dealData);
+    
+    const { error } = await supabase
+      .from('deals')
+      .update({
+        title: dealData.title,
+        location: dealData.location,
+        image_url: dealData.imageUrl,
+        regular_price: dealData.regularPrice,
+        member_price: dealData.memberPrice,
+        discount: dealData.discount,
+        rating: dealData.rating,
+        description: dealData.description
+      })
+      .eq('id', dealId);
+    
+    if (error) {
+      console.error("Error updating deal:", error);
+      throw error;
+    }
+    
+    console.log(`Deal ${dealId} updated successfully`);
+    return true;
+  } catch (error) {
+    console.error("Exception in updateDeal:", error);
+    return false;
+  }
+};
