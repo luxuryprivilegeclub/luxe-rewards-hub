@@ -71,8 +71,8 @@ export const getDatabase = async (): Promise<Database> => {
       points: member.points
     }));
 
-    // Map bookings data
-    const bookings = bookingsResult.data ? bookingsResult.data.map((booking): Booking => ({
+    // Map bookings data with proper type checking
+    const bookings = bookingsResult.data ? bookingsResult.data.map((booking: any): Booking => ({
       id: booking.id,
       deal_id: booking.deal_id,
       deal_title: booking.deal_title,
@@ -270,7 +270,7 @@ export const saveDatabase = async (data: Database) => {
 };
 
 // Delete operations
-export const deleteResource = async (table: string, id: number) => {
+export const deleteResource = async (table: "bookings" | "deals" | "members" | "pages" | "settings" | "tour_packages", id: number) => {
   try {
     const { error } = await customQuery(table)
       .delete()
