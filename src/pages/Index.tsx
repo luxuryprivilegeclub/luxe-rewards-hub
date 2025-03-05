@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -17,6 +16,7 @@ import { Settings } from "@/components/admin/types";
 const Index = () => {
   const [deals, setDeals] = useState([]);
   const [premiumOptions, setPremiumOptions] = useState([]);
+  
   const [settings, setSettings] = useState<{
     siteTitle: string;
     siteTagline: string;
@@ -39,7 +39,6 @@ const Index = () => {
     const fetchData = async () => {
       try {
         const data = await getDatabase();
-        // Handle optional properties safely with default values
         setSettings({
           siteTitle: data.settings.siteTitle || "Luxury Privilege Club",
           siteTagline: data.settings.siteTagline || "Pakistan's Premium Hotel Loyalty Program",
@@ -74,7 +73,7 @@ const Index = () => {
                 id={deal.id}
                 title={deal.title}
                 location={deal.location}
-                image={deal.imageUrl}
+                imageUrl={deal.imageUrl}
                 regularPrice={deal.regularPrice}
                 memberPrice={deal.memberPrice}
                 discount={deal.discount}
@@ -113,6 +112,7 @@ const Index = () => {
         </div>
       </ScrollAnimation>
 
+      {/* Membership Plans Section */}
       <ScrollAnimation>
         <div className="py-16 bg-gray-900">
           <div className="max-w-7xl mx-auto px-4">
