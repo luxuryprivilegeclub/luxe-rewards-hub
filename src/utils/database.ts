@@ -1,4 +1,3 @@
-
 import { supabase, customQuery } from "@/integrations/supabase/client";
 import { Database, Settings, Deal, TourPackage, Member, Page, Booking } from "@/components/admin/types";
 

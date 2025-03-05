@@ -152,22 +152,31 @@ export type Database = {
       settings: {
         Row: {
           currency: string
+          gold_price: number | null
           id: number
           payment_methods: string
+          platinum_price: number | null
+          silver_price: number | null
           site_tagline: string
           site_title: string
         }
         Insert: {
           currency: string
+          gold_price?: number | null
           id?: number
           payment_methods: string
+          platinum_price?: number | null
+          silver_price?: number | null
           site_tagline: string
           site_title: string
         }
         Update: {
           currency?: string
+          gold_price?: number | null
           id?: number
           payment_methods?: string
+          platinum_price?: number | null
+          silver_price?: number | null
           site_tagline?: string
           site_title?: string
         }
