@@ -92,14 +92,20 @@ export const getDatabase = async (): Promise<Database> => {
       site_title: "Luxury Privilege Club",
       site_tagline: "Pakistan's Premium Hotel Loyalty Program",
       currency: "PKR",
-      payment_methods: "Credit Card, Bank Transfer"
+      payment_methods: "Credit Card, Bank Transfer",
+      silver_price: 35000,
+      gold_price: 70000,
+      platinum_price: 150000
     };
     
     const settings: Settings = {
       siteTitle: settingsData.site_title,
       siteTagline: settingsData.site_tagline,
       currency: settingsData.currency,
-      paymentMethods: settingsData.payment_methods
+      paymentMethods: settingsData.payment_methods,
+      silverPrice: settingsData.silver_price,
+      goldPrice: settingsData.gold_price,
+      platinumPrice: settingsData.platinum_price
     };
 
     // Return the composed database object
@@ -124,7 +130,10 @@ export const getDatabase = async (): Promise<Database> => {
         siteTitle: "Luxury Privilege Club",
         siteTagline: "Pakistan's Premium Hotel Loyalty Program",
         currency: "PKR",
-        paymentMethods: "Credit Card, Bank Transfer"
+        paymentMethods: "Credit Card, Bank Transfer",
+        silverPrice: 35000,
+        goldPrice: 70000,
+        platinumPrice: 150000
       }
     };
   }
@@ -259,7 +268,10 @@ export const saveDatabase = async (data: Database) => {
         site_title: data.settings.siteTitle,
         site_tagline: data.settings.siteTagline,
         currency: data.settings.currency,
-        payment_methods: data.settings.paymentMethods
+        payment_methods: data.settings.paymentMethods,
+        silver_price: data.settings.silverPrice,
+        gold_price: data.settings.goldPrice,
+        platinum_price: data.settings.platinumPrice
       })
       .eq('id', 1);
 

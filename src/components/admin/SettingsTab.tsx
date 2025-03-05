@@ -10,6 +10,9 @@ interface Settings {
   siteTagline: string;
   currency: string;
   paymentMethods: string;
+  silverPrice?: number;
+  goldPrice?: number;
+  platinumPrice?: number;
 }
 
 interface SettingsTabProps {
@@ -68,6 +71,42 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                 className="bg-luxury-rich-black border-luxury-gold/30"
                 placeholder="e.g. Credit Card, Bank Transfer"
               />
+            </div>
+          </div>
+          
+          <div className="border-t border-luxury-gold/20 pt-4 mt-4">
+            <h4 className="text-lg font-medium mb-3">Membership Pricing</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="silverPrice">Silver Price</Label>
+                <Input
+                  id="silverPrice"
+                  type="number"
+                  value={settings.silverPrice || 35000}
+                  onChange={(e) => setSettings({...settings, silverPrice: Number(e.target.value)})}
+                  className="bg-luxury-rich-black border-luxury-gold/30"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="goldPrice">Gold Price</Label>
+                <Input
+                  id="goldPrice"
+                  type="number"
+                  value={settings.goldPrice || 70000}
+                  onChange={(e) => setSettings({...settings, goldPrice: Number(e.target.value)})}
+                  className="bg-luxury-rich-black border-luxury-gold/30"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="platinumPrice">Platinum Price</Label>
+                <Input
+                  id="platinumPrice"
+                  type="number"
+                  value={settings.platinumPrice || 150000}
+                  onChange={(e) => setSettings({...settings, platinumPrice: Number(e.target.value)})}
+                  className="bg-luxury-rich-black border-luxury-gold/30"
+                />
+              </div>
             </div>
           </div>
           

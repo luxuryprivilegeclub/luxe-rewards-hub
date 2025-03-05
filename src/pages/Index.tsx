@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
@@ -8,15 +9,25 @@ import HeroSection from '@/components/HeroSection';
 import PremiumCard from '@/components/PremiumCard';
 import ScrollAnimation from '@/components/ScrollAnimation';
 import { supabase } from '@/integrations/supabase/client';
-import { Deal, TourPackage } from '@/components/admin/types';
+import { Deal, TourPackage, Settings } from '@/components/admin/types';
+import { formatPrice } from '@/utils/database';
 
 const Index = () => {
   const [featuredDeals, setFeaturedDeals] = useState<Deal[]>([]);
   const [featuredTours, setFeaturedTours] = useState<TourPackage[]>([]);
+  const [settings, setSettings] = useState<Settings>({
+    siteTitle: "Luxury Privilege Club",
+    siteTagline: "Pakistan's Premium Hotel Loyalty Program",
+    currency: "PKR",
+    paymentMethods: "Credit Card, Bank Transfer",
+    silverPrice: 35000,
+    goldPrice: 70000,
+    platinumPrice: 150000
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFeatured = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
         // Fetch featured deals
@@ -66,6 +77,28 @@ const Index = () => {
         }));
 
         setFeaturedTours(formattedTours);
+
+        // Fetch settings
+        const { data: settingsData, error: settingsError } = await supabase
+          .from('settings')
+          .select('*')
+          .limit(1);
+
+        if (settingsError) {
+          throw settingsError;
+        }
+
+        if (settingsData && settingsData.length > 0) {
+          setSettings({
+            siteTitle: settingsData[0].site_title,
+            siteTagline: settingsData[0].site_tagline,
+            currency: settingsData[0].currency,
+            paymentMethods: settingsData[0].payment_methods,
+            silverPrice: settingsData[0].silver_price || 35000,
+            goldPrice: settingsData[0].gold_price || 70000,
+            platinumPrice: settingsData[0].platinum_price || 150000
+          });
+        }
       } catch (error) {
         console.error('Error fetching featured content:', error);
       } finally {
@@ -73,7 +106,7 @@ const Index = () => {
       }
     };
 
-    fetchFeatured();
+    fetchData();
   }, []);
 
   return (
@@ -137,6 +170,169 @@ const Index = () => {
                   ))}
                 </>
               )}
+            </div>
+          </div>
+        </section>
+
+        {/* Video Section */}
+        <section className="py-16 md:py-24 bg-black relative">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-display text-white mb-3">
+                Experience <span className="text-luxury-gradient">Luxury Living</span>
+              </h2>
+              <p className="text-white/70 md:text-lg">
+                Watch how our members enjoy exclusive privileges at Pakistan's finest hotels
+              </p>
+            </div>
+            
+            <div className="max-w-4xl mx-auto overflow-hidden rounded-xl shadow-2xl">
+              <div className="aspect-w-16 aspect-h-9 bg-black">
+                <iframe 
+                  className="w-full h-full"
+                  src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                  title="Luxury Privilege Club Experience" 
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen>
+                </iframe>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        {/* Membership Price Section */}
+        <section className="py-16 md:py-24 bg-luxury-rich-black relative">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-display text-white mb-3">
+                Membership <span className="text-luxury-gradient">Tiers</span>
+              </h2>
+              <p className="text-white/70 md:text-lg">
+                Choose the privilege level that suits your lifestyle
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Silver Tier */}
+              <ScrollAnimation type="fadeIn" delay={100}>
+                <div className="bg-gradient-to-b from-[#C0C0C0]/10 to-black rounded-xl p-6 border border-[#C0C0C0]/30 hover:shadow-[0_8px_30px_rgba(192,192,192,0.2)] transition-shadow duration-300">
+                  <div className="mb-4">
+                    <div className="w-16 h-16 rounded-full bg-[#C0C0C0]/20 flex items-center justify-center mb-4">
+                      <span className="text-[#C0C0C0] text-2xl font-bold">S</span>
+                    </div>
+                    <h3 className="text-2xl font-medium text-[#C0C0C0] mb-2">Silver</h3>
+                    <div className="text-3xl font-bold text-white mb-4">
+                      {settings.currency} {formatPrice(settings.silverPrice)}
+                    </div>
+                    <p className="text-white/70">Perfect for occasional travelers seeking special rates and basic privileges.</p>
+                  </div>
+                  <ul className="space-y-3 mb-6">
+                    <li className="flex items-center text-white/80">
+                      <Check size={16} className="text-[#C0C0C0] mr-2" />
+                      <span>Special member rates</span>
+                    </li>
+                    <li className="flex items-center text-white/80">
+                      <Check size={16} className="text-[#C0C0C0] mr-2" />
+                      <span>Earn points on bookings</span>
+                    </li>
+                    <li className="flex items-center text-white/80">
+                      <Check size={16} className="text-[#C0C0C0] mr-2" />
+                      <span>Priority customer service</span>
+                    </li>
+                  </ul>
+                  <Link to="/register">
+                    <button className="w-full py-3 px-6 bg-[#C0C0C0]/20 hover:bg-[#C0C0C0]/30 text-white rounded-lg transition-colors">
+                      Join Silver
+                    </button>
+                  </Link>
+                </div>
+              </ScrollAnimation>
+              
+              {/* Gold Tier */}
+              <ScrollAnimation type="fadeIn" delay={200}>
+                <div className="bg-gradient-to-b from-[#FFD700]/10 to-black rounded-xl p-6 border border-[#FFD700]/30 hover:shadow-[0_8px_30px_rgba(255,215,0,0.2)] transition-shadow duration-300 transform scale-105 -mt-2">
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-luxury-gold text-black text-xs px-4 py-1 rounded-full font-semibold">
+                    Most Popular
+                  </div>
+                  <div className="mb-4">
+                    <div className="w-16 h-16 rounded-full bg-[#FFD700]/20 flex items-center justify-center mb-4">
+                      <span className="text-[#FFD700] text-2xl font-bold">G</span>
+                    </div>
+                    <h3 className="text-2xl font-medium text-[#FFD700] mb-2">Gold</h3>
+                    <div className="text-3xl font-bold text-white mb-4">
+                      {settings.currency} {formatPrice(settings.goldPrice)}
+                    </div>
+                    <p className="text-white/70">Enhanced benefits for frequent travelers who want premium service and better perks.</p>
+                  </div>
+                  <ul className="space-y-3 mb-6">
+                    <li className="flex items-center text-white/80">
+                      <Check size={16} className="text-[#FFD700] mr-2" />
+                      <span>All Silver benefits</span>
+                    </li>
+                    <li className="flex items-center text-white/80">
+                      <Check size={16} className="text-[#FFD700] mr-2" />
+                      <span>Room upgrades when available</span>
+                    </li>
+                    <li className="flex items-center text-white/80">
+                      <Check size={16} className="text-[#FFD700] mr-2" />
+                      <span>Early check-in & late check-out</span>
+                    </li>
+                    <li className="flex items-center text-white/80">
+                      <Check size={16} className="text-[#FFD700] mr-2" />
+                      <span>Exclusive event invitations</span>
+                    </li>
+                  </ul>
+                  <Link to="/register">
+                    <button className="w-full py-3 px-6 bg-luxury-gold text-black rounded-lg transition-colors hover:bg-luxury-dark-gold font-medium">
+                      Join Gold
+                    </button>
+                  </Link>
+                </div>
+              </ScrollAnimation>
+              
+              {/* Platinum Tier */}
+              <ScrollAnimation type="fadeIn" delay={300}>
+                <div className="bg-gradient-to-b from-[#E5E4E2]/10 to-black rounded-xl p-6 border border-[#E5E4E2]/30 hover:shadow-[0_8px_30px_rgba(229,228,226,0.2)] transition-shadow duration-300">
+                  <div className="mb-4">
+                    <div className="w-16 h-16 rounded-full bg-[#E5E4E2]/20 flex items-center justify-center mb-4">
+                      <span className="text-[#E5E4E2] text-2xl font-bold">P</span>
+                    </div>
+                    <h3 className="text-2xl font-medium text-[#E5E4E2] mb-2">Platinum</h3>
+                    <div className="text-3xl font-bold text-white mb-4">
+                      {settings.currency} {formatPrice(settings.platinumPrice)}
+                    </div>
+                    <p className="text-white/70">The ultimate luxury experience for the discerning traveler who demands the very best.</p>
+                  </div>
+                  <ul className="space-y-3 mb-6">
+                    <li className="flex items-center text-white/80">
+                      <Check size={16} className="text-[#E5E4E2] mr-2" />
+                      <span>All Gold benefits</span>
+                    </li>
+                    <li className="flex items-center text-white/80">
+                      <Check size={16} className="text-[#E5E4E2] mr-2" />
+                      <span>Guaranteed upgrades</span>
+                    </li>
+                    <li className="flex items-center text-white/80">
+                      <Check size={16} className="text-[#E5E4E2] mr-2" />
+                      <span>Personal travel concierge</span>
+                    </li>
+                    <li className="flex items-center text-white/80">
+                      <Check size={16} className="text-[#E5E4E2] mr-2" />
+                      <span>Complimentary airport transfers</span>
+                    </li>
+                    <li className="flex items-center text-white/80">
+                      <Check size={16} className="text-[#E5E4E2] mr-2" />
+                      <span>VIP access to partner facilities</span>
+                    </li>
+                  </ul>
+                  <Link to="/register">
+                    <button className="w-full py-3 px-6 bg-[#E5E4E2]/20 hover:bg-[#E5E4E2]/30 text-white rounded-lg transition-colors">
+                      Join Platinum
+                    </button>
+                  </Link>
+                </div>
+              </ScrollAnimation>
             </div>
           </div>
         </section>

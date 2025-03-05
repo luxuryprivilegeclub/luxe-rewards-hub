@@ -1,4 +1,3 @@
-
 export interface Page {
   id?: number;
   title: string;
@@ -60,6 +59,9 @@ export interface Settings {
   siteTagline: string;
   currency: string;
   paymentMethods: string;
+  silverPrice?: number;
+  goldPrice?: number;
+  platinumPrice?: number;
 }
 
 export interface Database {
