@@ -87,8 +87,8 @@ const Index = () => {
               <iframe 
                 width="100%" 
                 height="100%" 
-                src="https://www.youtube.com/watch?v=zvP-BoDL9I0" 
-                title="Why Chose us!" 
+                src="https://www.youtube.com/embed/zvP-BoDL9I0" 
+                title="Why Choose us!" 
                 frameBorder="0" 
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                 allowFullScreen
@@ -276,6 +276,17 @@ const Index = () => {
         <div className="py-16 bg-gray-900">
           <div className="max-w-7xl mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+              <div className="relative overflow-hidden rounded-2xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800" 
+                  alt="Luxury experience" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-8">
+                  <h3 className="text-2xl md:text-3xl font-bold mb-2">Experience Unmatched <span className="text-luxury-gold">Luxury</span></h3>
+                  <p className="text-white/80 max-w-md">Join our exclusive membership program today and unlock a world of premium benefits.</p>
+                </div>
+              </div>
               <div>
                 <h2 className="text-4xl font-bold mb-6">Join The <span className="text-luxury-gold">Luxury Privilege Club</span></h2>
                 <p className="text-lg text-gray-400 mb-8">
@@ -310,13 +321,7 @@ const Index = () => {
                     </div>
                   </li>
                 </ul>
-              </div>
-              <div className="relative">
-                <div className="absolute -top-4 -left-4 w-24 h-24 bg-luxury-gold/10 rounded-full blur-2xl"></div>
-                <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-luxury-gold/10 rounded-full blur-2xl"></div>
-                <div className="relative bg-gray-800 rounded-xl overflow-hidden h-full">
-                  <JoinNowForm />
-                </div>
+                <JoinNowForm />
               </div>
             </div>
           </div>
