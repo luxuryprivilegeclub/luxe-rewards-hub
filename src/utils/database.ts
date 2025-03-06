@@ -168,28 +168,36 @@ export const saveDatabase = async (data: Database) => {
 
     // Save deals with improved error handling
     for (const deal of data.deals) {
-      if (deal.id) {
-        // Update existing deal using the specialized function
-        await updateDeal(deal.id, deal);
-      } else {
-        // Insert new deal
-        const { error } = await supabase
-          .from('deals')
-          .insert({
-            title: deal.title,
-            location: deal.location,
-            image_url: deal.imageUrl,
-            regular_price: deal.regularPrice,
-            member_price: deal.memberPrice,
-            discount: deal.discount,
-            rating: deal.rating,
-            description: deal.description
-          });
-          
-        if (error) {
-          console.error("Error inserting deal:", error);
-          throw error;
+      try {
+        if (deal.id) {
+          // Update existing deal using the specialized function
+          const success = await updateDeal(deal.id, deal);
+          if (!success) {
+            console.error(`Failed to update deal: ${deal.title}`);
+          }
+        } else {
+          // Insert new deal
+          const { error } = await supabase
+            .from('deals')
+            .insert({
+              title: deal.title,
+              location: deal.location,
+              image_url: deal.imageUrl,
+              regular_price: deal.regularPrice,
+              member_price: deal.memberPrice,
+              discount: deal.discount,
+              rating: deal.rating,
+              description: deal.description
+            });
+            
+          if (error) {
+            console.error("Error inserting deal:", error);
+            throw error;
+          }
         }
+      } catch (dealError) {
+        console.error(`Error processing deal ${deal.title}:`, dealError);
+        // Continue with other deals instead of stopping the whole process
       }
     }
 

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,9 +56,26 @@ const DealsTab: React.FC<DealsTabProps> = ({
       return;
     }
     
+    if (editingDeal.regularPrice <= 0) {
+      toast.error("Regular price must be greater than zero");
+      return;
+    }
+    
+    if (editingDeal.memberPrice <= 0) {
+      toast.error("Member price must be greater than zero");
+      return;
+    }
+    
     // All validations passed, save the deal
     console.log("Saving validated deal:", editingDeal);
-    handleSaveDeal(editingDeal);
+    toast.promise(
+      Promise.resolve(handleSaveDeal(editingDeal)),
+      {
+        loading: 'Saving deal...',
+        success: 'Deal saved successfully!',
+        error: 'Failed to save deal. Please try again.'
+      }
+    );
   };
   
   return (

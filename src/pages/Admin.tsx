@@ -164,37 +164,28 @@ const Admin = () => {
     try {
       console.log("Saving deal:", deal);
       
+      // First update state
       if (deal.id) {
         // Update existing deal
         const updatedDeals = deals.map(d => 
           d.id === deal.id ? deal : d
         );
-        
-        // First update state
         setDeals(updatedDeals);
-        
-        // Then save to database
-        await saveDatabase({
-          ...await getDatabase(),
-          deals: updatedDeals
-        });
-        
-        toast.success(`Deal "${deal.title}" updated successfully`);
       } else {
         // Add new deal
         const newDeals = [...deals, deal];
-        
-        // First update state
         setDeals(newDeals);
-        
-        // Then save to database
-        await saveDatabase({
-          ...await getDatabase(),
-          deals: newDeals
-        });
-        
-        toast.success(`Deal "${deal.title}" created successfully`);
       }
+      
+      // Then save to database
+      await saveDatabase({
+        ...await getDatabase(),
+        deals: deal.id 
+          ? deals.map(d => d.id === deal.id ? deal : d)
+          : [...deals, deal]
+      });
+      
+      toast.success(`Deal "${deal.title}" ${deal.id ? "updated" : "created"} successfully`);
       
       // Set editing deal to null after successful save
       setEditingDeal(null);

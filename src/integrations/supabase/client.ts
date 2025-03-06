@@ -27,6 +27,7 @@ export const updateDeal = async (dealId: number, dealData: any) => {
   try {
     console.log(`Updating deal ${dealId} with data:`, dealData);
     
+    // Fix: Use proper column names as they are in the database (snake_case, not camelCase)
     const { error } = await supabase
       .from('deals')
       .update({
