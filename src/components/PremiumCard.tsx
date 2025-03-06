@@ -1,9 +1,10 @@
 
-import { Button } from "@/components/ui/button";
 import { Star } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface PremiumCardProps {
+  id: number;
   title: string;
   location: string;
   imageUrl: string;
@@ -12,10 +13,11 @@ interface PremiumCardProps {
   rating: number;
   discount: number;
   className?: string;
-  id: number; // Add id to props
+  isTour?: boolean;
 }
 
-const PremiumCard = ({
+const PremiumCard: React.FC<PremiumCardProps> = ({
+  id,
   title,
   location,
   imageUrl,
@@ -23,22 +25,29 @@ const PremiumCard = ({
   memberPrice,
   rating,
   discount,
-  className = '',
-  id // Add id to destructuring
-}: PremiumCardProps) => {
-  // Format prices with commas
+  className = "",
+  isTour = false
+}) => {
+  const navigate = useNavigate();
+  
   const formatPrice = (price: number) => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
-
+  
+  const handleViewClick = () => {
+    if (isTour) {
+      navigate(`/tours/${id}`);
+    } else {
+      navigate(`/deals/${id}`);
+    }
+  };
+  
   return (
-    <div 
-      className={`luxury-card rounded-xl overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgba(184,134,11,0.1)] group ${className}`}
-    >
+    <div className={`luxury-card bg-black border border-luxury-gold/20 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgba(184,134,11,0.1)] group ${className}`}>
       {/* Image container with overlay */}
       <div className="relative h-52 overflow-hidden">
         <img 
-          src={imageUrl} 
+          src={imageUrl}
           alt={title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           loading="lazy"
@@ -86,13 +95,12 @@ const PremiumCard = ({
           </div>
         </div>
         
-        <Link to={`/deals/${id}`}>
-          <Button 
-            className="w-full bg-white text-black hover:bg-luxury-gold transition-colors duration-300"
-          >
-            View Deal
-          </Button>
-        </Link>
+        <button 
+          className="w-full bg-white hover:bg-luxury-gold text-black font-medium py-2 rounded transition-colors duration-300"
+          onClick={handleViewClick}
+        >
+          View {isTour ? 'Tour' : 'Deal'}
+        </button>
       </div>
     </div>
   );

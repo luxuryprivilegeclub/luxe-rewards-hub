@@ -79,7 +79,7 @@ const TourCard = ({ tour }: { tour: TourPackage }) => {
         
         <Button 
           className="w-full bg-white text-black hover:bg-luxury-gold transition-colors duration-300"
-          onClick={() => navigate("/login")}
+          onClick={() => navigate(`/tours/${tour.id}`)}
         >
           View Tour
         </Button>
@@ -161,6 +161,7 @@ const TourPackagesSection = () => {
           <Button 
             variant="outline" 
             className="border-luxury-gold/50 text-white hover:bg-luxury-gold/10 hover:text-luxury-gold"
+            onClick={() => window.location.href = '/tours'}
           >
             View All Tours
           </Button>

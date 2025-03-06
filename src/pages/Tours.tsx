@@ -98,6 +98,7 @@ const Tours = () => {
                       rating={tour.rating}
                       discount={tour.discount}
                       className="h-full"
+                      isTour={true}
                     />
                   </ScrollAnimation>
                 ))}
