@@ -1,4 +1,4 @@
-import { supabase, customQuery, updateDeal } from "@/integrations/supabase/client";
+import { supabase, customQuery, updateDeal, updateTourPackage, updateMember, updateSettings } from "@/integrations/supabase/client";
 import { Database, Settings, Deal, TourPackage, Member, Page, Booking } from "@/components/admin/types";
 
 // Initialize data in the database if it doesn't exist already
@@ -173,12 +173,11 @@ export const saveDatabase = async (data: Database) => {
           // Update existing deal using the specialized function
           const success = await updateDeal(deal.id, deal);
           if (!success) {
-            console.error(`Failed to update deal: ${deal.title}`);
+            throw new Error(`Failed to update deal: ${deal.title}`);
           }
         } else {
           // Insert new deal
-          const { error } = await supabase
-            .from('deals')
+          const { error } = await customQuery('deals')
             .insert({
               title: deal.title,
               location: deal.location,
@@ -197,31 +196,21 @@ export const saveDatabase = async (data: Database) => {
         }
       } catch (dealError) {
         console.error(`Error processing deal ${deal.title}:`, dealError);
-        // Continue with other deals instead of stopping the whole process
+        throw dealError; // Re-throw to allow handling in the admin panel
       }
     }
 
     // Save tour packages
     for (const tourPackage of data.tourPackages) {
       if (tourPackage.id) {
-        // Update existing tour package
-        await supabase
-          .from('tour_packages')
-          .update({
-            title: tourPackage.title,
-            location: tourPackage.location,
-            image_url: tourPackage.imageUrl,
-            regular_price: tourPackage.regularPrice,
-            member_price: tourPackage.memberPrice,
-            discount: tourPackage.discount,
-            rating: tourPackage.rating,
-            description: tourPackage.description
-          })
-          .eq('id', tourPackage.id);
+        // Update existing tour package using specialized function
+        const success = await updateTourPackage(tourPackage.id, tourPackage);
+        if (!success) {
+          throw new Error(`Failed to update tour package: ${tourPackage.title}`);
+        }
       } else {
         // Insert new tour package
-        await supabase
-          .from('tour_packages')
+        const { error } = await customQuery('tour_packages')
           .insert({
             title: tourPackage.title,
             location: tourPackage.location,
@@ -232,48 +221,44 @@ export const saveDatabase = async (data: Database) => {
             rating: tourPackage.rating,
             description: tourPackage.description
           });
+          
+        if (error) {
+          console.error("Error inserting tour package:", error);
+          throw error;
+        }
       }
     }
 
     // Save members
     for (const member of data.members) {
       if (member.id) {
-        // Update existing member
-        await supabase
-          .from('members')
-          .update({
-            name: member.name,
-            email: member.email,
-            type: member.type,
-            points: member.points
-          })
-          .eq('id', member.id);
+        // Update existing member using specialized function
+        const success = await updateMember(member.id, member);
+        if (!success) {
+          throw new Error(`Failed to update member: ${member.name}`);
+        }
       } else {
         // Insert new member
-        await supabase
-          .from('members')
+        const { error } = await customQuery('members')
           .insert({
             name: member.name,
             email: member.email,
             type: member.type,
             points: member.points
           });
+          
+        if (error) {
+          console.error("Error inserting member:", error);
+          throw error;
+        }
       }
     }
 
     // Save settings
-    await supabase
-      .from('settings')
-      .update({
-        site_title: data.settings.siteTitle,
-        site_tagline: data.settings.siteTagline,
-        currency: data.settings.currency,
-        payment_methods: data.settings.paymentMethods,
-        silver_price: data.settings.silverPrice,
-        gold_price: data.settings.goldPrice,
-        platinum_price: data.settings.platinumPrice
-      })
-      .eq('id', 1);
+    const success = await updateSettings(data.settings);
+    if (!success) {
+      throw new Error("Failed to update settings");
+    }
 
     console.log("Data saved to Supabase successfully");
   } catch (error) {

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -42,47 +43,11 @@ const Admin = () => {
   const [editingTourPackage, setEditingTourPackage] = useState<TourPackage | null>(null);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   
-  // Load data from database and check authentication
-  useEffect(() => {
-    console.log("Admin component mounted");
-    
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const db = await getDatabase();
-        setPages(db.pages || []);
-        setDeals(db.deals || []);
-        setTourPackages(db.tourPackages || []);
-        setMembers(db.members || []);
-        setSettings(db.settings || {
-          siteTitle: "",
-          siteTagline: "",
-          currency: "",
-          paymentMethods: ""
-        });
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("Failed to load data. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    // Check if admin is already authenticated
-    const adminAuth = localStorage.getItem("adminAuthenticated") === "true";
-    console.log("Admin authentication status:", adminAuth);
-    setIsAuthenticated(adminAuth);
-    
-    if (adminAuth) {
-      fetchData();
-    }
-  }, []);
-
-  const handleLogin = () => {
-    console.log("Admin logged in successfully");
-    setIsAuthenticated(true);
-    // Fetch data after login
-    getDatabase().then(db => {
+  // Load data function
+  const loadDatabaseData = async () => {
+    try {
+      setIsLoading(true);
+      const db = await getDatabase();
       setPages(db.pages || []);
       setDeals(db.deals || []);
       setTourPackages(db.tourPackages || []);
@@ -93,10 +58,32 @@ const Admin = () => {
         currency: "",
         paymentMethods: ""
       });
-    }).catch(error => {
-      console.error("Error fetching data after login:", error);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error loading database data:", error);
       toast.error("Failed to load data. Please try again.");
-    });
+      setIsLoading(false);
+    }
+  };
+  
+  // Load data from database and check authentication
+  useEffect(() => {
+    console.log("Admin component mounted");
+    
+    // Check if admin is already authenticated
+    const adminAuth = localStorage.getItem("adminAuthenticated") === "true";
+    console.log("Admin authentication status:", adminAuth);
+    setIsAuthenticated(adminAuth);
+    
+    if (adminAuth) {
+      loadDatabaseData();
+    }
+  }, []);
+
+  const handleLogin = () => {
+    console.log("Admin logged in successfully");
+    setIsAuthenticated(true);
+    loadDatabaseData();
   };
 
   const handleLogout = () => {
@@ -173,8 +160,11 @@ const Admin = () => {
         setDeals(updatedDeals);
       } else {
         // Add new deal
-        const newDeals = [...deals, deal];
-        setDeals(newDeals);
+        const newDeal = {
+          ...deal,
+          id: Math.max(0, ...deals.map(d => d.id || 0)) + 1
+        };
+        setDeals([...deals, newDeal]);
       }
       
       // Then save to database
@@ -182,7 +172,7 @@ const Admin = () => {
         ...await getDatabase(),
         deals: deal.id 
           ? deals.map(d => d.id === deal.id ? deal : d)
-          : [...deals, deal]
+          : [...deals, { ...deal, id: Math.max(0, ...deals.map(d => d.id || 0)) + 1 }]
       });
       
       toast.success(`Deal "${deal.title}" ${deal.id ? "updated" : "created"} successfully`);
@@ -191,93 +181,98 @@ const Admin = () => {
       setEditingDeal(null);
       
       // Refresh the data to ensure we have the latest from the database
-      const db = await getDatabase();
-      setDeals(db.deals || []);
+      loadDatabaseData();
       
     } catch (error) {
       console.error("Error saving deal:", error);
       toast.error(`Failed to save deal: ${error instanceof Error ? error.message : "Unknown error"}`);
-      
-      // Since the save failed, refresh data to restore previous state
-      const db = await getDatabase();
-      setDeals(db.deals || []);
     }
   };
 
   // CRUD operations for tour packages
   const handleSaveTourPackage = async (tourPackage: TourPackage) => {
     try {
+      // First update state
       if (tourPackage.id) {
         // Update existing tour package
         const updatedTourPackages = tourPackages.map(tp => 
           tp.id === tourPackage.id ? tourPackage : tp
         );
         setTourPackages(updatedTourPackages);
-        
-        await saveDatabase({
-          ...await getDatabase(),
-          tourPackages: updatedTourPackages
-        });
-        
-        toast.success(`Tour Package "${tourPackage.title}" updated successfully`);
       } else {
-        // Add new tour package
-        const newTourPackages = [...tourPackages, tourPackage];
-        setTourPackages(newTourPackages);
-        
-        await saveDatabase({
-          ...await getDatabase(),
-          tourPackages: newTourPackages
-        });
-        
-        toast.success(`Tour Package "${tourPackage.title}" created successfully`);
+        // Add new tour package with a new ID
+        const newTourPackage = {
+          ...tourPackage,
+          id: Math.max(0, ...tourPackages.map(tp => tp.id || 0)) + 1
+        };
+        setTourPackages([...tourPackages, newTourPackage]);
       }
       
+      // Then save to database
+      await saveDatabase({
+        ...await getDatabase(),
+        tourPackages: tourPackage.id 
+          ? tourPackages.map(tp => tp.id === tourPackage.id ? tourPackage : tp)
+          : [...tourPackages, { ...tourPackage, id: Math.max(0, ...tourPackages.map(tp => tp.id || 0)) + 1 }]
+      });
+      
+      toast.success(`Tour Package "${tourPackage.title}" ${tourPackage.id ? "updated" : "created"} successfully`);
+      
+      // Set editing tour package to null after successful save
       setEditingTourPackage(null);
+      
+      // Refresh the data to ensure we have the latest from the database
+      loadDatabaseData();
+      
     } catch (error) {
       console.error("Error saving tour package:", error);
-      toast.error("Failed to save tour package. Please try again.");
+      toast.error(`Failed to save tour package: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
   
   // CRUD operations for members
   const handleSaveMember = async (member: Member) => {
     try {
+      // First update state
       if (member.id) {
         // Update existing member
         const updatedMembers = members.map(m => 
           m.id === member.id ? member : m
         );
         setMembers(updatedMembers);
-        
-        await saveDatabase({
-          ...await getDatabase(),
-          members: updatedMembers
-        });
-        
-        toast.success(`Member "${member.name}" updated successfully`);
       } else {
-        // Add new member
+        // Add new member with a new ID
         const newMember = {
           ...member,
+          id: Math.max(0, ...members.map(m => m.id || 0)) + 1,
           date: new Date().toISOString().split('T')[0]
         };
-        
-        const newMembers = [...members, newMember];
-        setMembers(newMembers);
-        
-        await saveDatabase({
-          ...await getDatabase(),
-          members: newMembers
-        });
-        
-        toast.success(`Member "${member.name}" created successfully`);
+        setMembers([...members, newMember]);
       }
       
+      // Then save to database
+      await saveDatabase({
+        ...await getDatabase(),
+        members: member.id 
+          ? members.map(m => m.id === member.id ? member : m)
+          : [...members, { 
+              ...member, 
+              id: Math.max(0, ...members.map(m => m.id || 0)) + 1,
+              date: new Date().toISOString().split('T')[0]
+            }]
+      });
+      
+      toast.success(`Member "${member.name}" ${member.id ? "updated" : "created"} successfully`);
+      
+      // Set editing member to null after successful save
       setEditingMember(null);
+      
+      // Refresh the data to ensure we have the latest from the database
+      loadDatabaseData();
+      
     } catch (error) {
       console.error("Error saving member:", error);
-      toast.error("Failed to save member. Please try again.");
+      toast.error(`Failed to save member: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
   
@@ -290,9 +285,13 @@ const Admin = () => {
       });
       
       toast.success("Settings updated successfully");
+      
+      // Refresh the data to ensure we have the latest from the database
+      loadDatabaseData();
+      
     } catch (error) {
       console.error("Error saving settings:", error);
-      toast.error("Failed to save settings. Please try again.");
+      toast.error(`Failed to save settings: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
   

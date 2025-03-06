@@ -27,7 +27,7 @@ export const updateDeal = async (dealId: number, dealData: any) => {
   try {
     console.log(`Updating deal ${dealId} with data:`, dealData);
     
-    // Fix: Direct database access with proper column names
+    // Use customQuery instead of direct database access to avoid permission issues
     const { error } = await customQuery('deals')
       .update({
         title: dealData.title,
@@ -50,6 +50,94 @@ export const updateDeal = async (dealId: number, dealData: any) => {
     return true;
   } catch (error) {
     console.error("Exception in updateDeal:", error);
+    return false;
+  }
+};
+
+// Specialized function for updating tour packages
+export const updateTourPackage = async (tourId: number, tourData: any) => {
+  try {
+    console.log(`Updating tour package ${tourId} with data:`, tourData);
+    
+    const { error } = await customQuery('tour_packages')
+      .update({
+        title: tourData.title,
+        location: tourData.location,
+        image_url: tourData.imageUrl,
+        regular_price: tourData.regularPrice,
+        member_price: tourData.memberPrice,
+        discount: tourData.discount,
+        rating: tourData.rating,
+        description: tourData.description
+      })
+      .eq('id', tourId);
+    
+    if (error) {
+      console.error("Error updating tour package:", error);
+      throw error;
+    }
+    
+    console.log(`Tour package ${tourId} updated successfully`);
+    return true;
+  } catch (error) {
+    console.error("Exception in updateTourPackage:", error);
+    return false;
+  }
+};
+
+// Specialized function for updating members
+export const updateMember = async (memberId: number, memberData: any) => {
+  try {
+    console.log(`Updating member ${memberId} with data:`, memberData);
+    
+    const { error } = await customQuery('members')
+      .update({
+        name: memberData.name,
+        email: memberData.email,
+        type: memberData.type,
+        points: memberData.points
+      })
+      .eq('id', memberId);
+    
+    if (error) {
+      console.error("Error updating member:", error);
+      throw error;
+    }
+    
+    console.log(`Member ${memberId} updated successfully`);
+    return true;
+  } catch (error) {
+    console.error("Exception in updateMember:", error);
+    return false;
+  }
+};
+
+// Specialized function for updating settings
+export const updateSettings = async (settingsData: any) => {
+  try {
+    console.log(`Updating settings with data:`, settingsData);
+    
+    const { error } = await customQuery('settings')
+      .update({
+        site_title: settingsData.siteTitle,
+        site_tagline: settingsData.siteTagline,
+        currency: settingsData.currency,
+        payment_methods: settingsData.paymentMethods,
+        silver_price: settingsData.silverPrice,
+        gold_price: settingsData.goldPrice,
+        platinum_price: settingsData.platinumPrice
+      })
+      .eq('id', 1);
+    
+    if (error) {
+      console.error("Error updating settings:", error);
+      throw error;
+    }
+    
+    console.log("Settings updated successfully");
+    return true;
+  } catch (error) {
+    console.error("Exception in updateSettings:", error);
     return false;
   }
 };
