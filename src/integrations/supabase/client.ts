@@ -27,8 +27,9 @@ export const updateDeal = async (dealId: number, dealData: any) => {
   try {
     console.log(`Updating deal ${dealId} with data:`, dealData);
     
-    // Use customQuery instead of direct database access to avoid permission issues
-    const { error } = await customQuery('deals')
+    // Use direct query to the deals table, avoiding any reference to users table
+    const { data, error } = await supabase
+      .from('deals')
       .update({
         title: dealData.title,
         location: dealData.location,
@@ -39,14 +40,15 @@ export const updateDeal = async (dealId: number, dealData: any) => {
         rating: dealData.rating,
         description: dealData.description
       })
-      .eq('id', dealId);
+      .eq('id', dealId)
+      .select();
     
     if (error) {
       console.error("Error updating deal:", error);
       throw error;
     }
     
-    console.log(`Deal ${dealId} updated successfully`);
+    console.log(`Deal ${dealId} updated successfully:`, data);
     return true;
   } catch (error) {
     console.error("Exception in updateDeal:", error);
@@ -59,7 +61,8 @@ export const updateTourPackage = async (tourId: number, tourData: any) => {
   try {
     console.log(`Updating tour package ${tourId} with data:`, tourData);
     
-    const { error } = await customQuery('tour_packages')
+    const { data, error } = await supabase
+      .from('tour_packages')
       .update({
         title: tourData.title,
         location: tourData.location,
@@ -70,14 +73,15 @@ export const updateTourPackage = async (tourId: number, tourData: any) => {
         rating: tourData.rating,
         description: tourData.description
       })
-      .eq('id', tourId);
+      .eq('id', tourId)
+      .select();
     
     if (error) {
       console.error("Error updating tour package:", error);
       throw error;
     }
     
-    console.log(`Tour package ${tourId} updated successfully`);
+    console.log(`Tour package ${tourId} updated successfully:`, data);
     return true;
   } catch (error) {
     console.error("Exception in updateTourPackage:", error);
@@ -90,21 +94,23 @@ export const updateMember = async (memberId: number, memberData: any) => {
   try {
     console.log(`Updating member ${memberId} with data:`, memberData);
     
-    const { error } = await customQuery('members')
+    const { data, error } = await supabase
+      .from('members')
       .update({
         name: memberData.name,
         email: memberData.email,
         type: memberData.type,
         points: memberData.points
       })
-      .eq('id', memberId);
+      .eq('id', memberId)
+      .select();
     
     if (error) {
       console.error("Error updating member:", error);
       throw error;
     }
     
-    console.log(`Member ${memberId} updated successfully`);
+    console.log(`Member ${memberId} updated successfully:`, data);
     return true;
   } catch (error) {
     console.error("Exception in updateMember:", error);
@@ -117,7 +123,8 @@ export const updateSettings = async (settingsData: any) => {
   try {
     console.log(`Updating settings with data:`, settingsData);
     
-    const { error } = await customQuery('settings')
+    const { data, error } = await supabase
+      .from('settings')
       .update({
         site_title: settingsData.siteTitle,
         site_tagline: settingsData.siteTagline,
@@ -127,14 +134,15 @@ export const updateSettings = async (settingsData: any) => {
         gold_price: settingsData.goldPrice,
         platinum_price: settingsData.platinumPrice
       })
-      .eq('id', 1);
+      .eq('id', 1)
+      .select();
     
     if (error) {
       console.error("Error updating settings:", error);
       throw error;
     }
     
-    console.log("Settings updated successfully");
+    console.log("Settings updated successfully:", data);
     return true;
   } catch (error) {
     console.error("Exception in updateSettings:", error);
