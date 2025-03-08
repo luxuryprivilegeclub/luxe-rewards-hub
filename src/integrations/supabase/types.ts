@@ -52,18 +52,11 @@ export type Database = {
           phone?: string
           status?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "bookings_deal_id_fkey"
-            columns: ["deal_id"]
-            isOneToOne: false
-            referencedRelation: "deals"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       deals: {
         Row: {
+          created_at: string
           description: string
           discount: number
           id: number
@@ -75,6 +68,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          created_at?: string
           description: string
           discount: number
           id?: number
@@ -86,6 +80,7 @@ export type Database = {
           title: string
         }
         Update: {
+          created_at?: string
           description?: string
           discount?: number
           id?: number
@@ -95,6 +90,42 @@ export type Database = {
           rating?: number
           regular_price?: number
           title?: string
+        }
+        Relationships: []
+      }
+      deals_backup: {
+        Row: {
+          description: string | null
+          discount: number | null
+          id: number | null
+          image_url: string | null
+          location: string | null
+          member_price: number | null
+          rating: number | null
+          regular_price: number | null
+          title: string | null
+        }
+        Insert: {
+          description?: string | null
+          discount?: number | null
+          id?: number | null
+          image_url?: string | null
+          location?: string | null
+          member_price?: number | null
+          rating?: number | null
+          regular_price?: number | null
+          title?: string | null
+        }
+        Update: {
+          description?: string | null
+          discount?: number | null
+          id?: number | null
+          image_url?: string | null
+          location?: string | null
+          member_price?: number | null
+          rating?: number | null
+          regular_price?: number | null
+          title?: string | null
         }
         Relationships: []
       }
@@ -184,6 +215,7 @@ export type Database = {
       }
       tour_packages: {
         Row: {
+          created_at: string
           description: string
           discount: number
           id: number
@@ -195,6 +227,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          created_at?: string
           description: string
           discount: number
           id?: number
@@ -206,6 +239,7 @@ export type Database = {
           title: string
         }
         Update: {
+          created_at?: string
           description?: string
           discount?: number
           id?: number
@@ -215,6 +249,42 @@ export type Database = {
           rating?: number
           regular_price?: number
           title?: string
+        }
+        Relationships: []
+      }
+      tour_packages_backup: {
+        Row: {
+          description: string | null
+          discount: number | null
+          id: number | null
+          image_url: string | null
+          location: string | null
+          member_price: number | null
+          rating: number | null
+          regular_price: number | null
+          title: string | null
+        }
+        Insert: {
+          description?: string | null
+          discount?: number | null
+          id?: number | null
+          image_url?: string | null
+          location?: string | null
+          member_price?: number | null
+          rating?: number | null
+          regular_price?: number | null
+          title?: string | null
+        }
+        Update: {
+          description?: string | null
+          discount?: number | null
+          id?: number | null
+          image_url?: string | null
+          location?: string | null
+          member_price?: number | null
+          rating?: number | null
+          regular_price?: number | null
+          title?: string | null
         }
         Relationships: []
       }

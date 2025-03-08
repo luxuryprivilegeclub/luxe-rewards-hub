@@ -1,21 +1,12 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Star } from 'lucide-react';
 import ScrollAnimation from './ScrollAnimation';
 import { useNavigate } from "react-router-dom";
-
-interface TourPackage {
-  id: number;
-  title: string;
-  location: string;
-  imageUrl: string;
-  regularPrice: number;
-  memberPrice: number;
-  rating: number;
-  discount: number;
-  description: string;
-}
+import { supabase } from "@/integrations/supabase/client";
+import { TourPackage } from "@/components/admin/types";
+import { toast } from "sonner";
 
 const formatPrice = (price: number) => {
   return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -89,53 +80,45 @@ const TourCard = ({ tour }: { tour: TourPackage }) => {
 };
 
 const TourPackagesSection = () => {
-  // Sample tour packages data (in a real app, this would be fetched from the database)
-  const tourPackages: TourPackage[] = [
-    {
-      id: 1,
-      title: "Hunza Valley Tour",
-      location: "Hunza, Pakistan",
-      imageUrl: "https://images.unsplash.com/photo-1501854140801-50d01698950b?q=80&w=1500&auto=format&fit=crop",
-      regularPrice: 45000,
-      memberPrice: 36000,
-      rating: 4.9,
-      discount: 20,
-      description: "Experience the natural beauty of Hunza Valley with our exclusive 5-day package tour."
-    },
-    {
-      id: 2,
-      title: "Skardu Adventure",
-      location: "Skardu, Pakistan",
-      imageUrl: "https://images.unsplash.com/photo-1472396961693-142e6e269027?q=80&w=1500&auto=format&fit=crop",
-      regularPrice: 52000,
-      memberPrice: 41600,
-      rating: 4.8,
-      discount: 20,
-      description: "Discover the breathtaking landscapes of Skardu with our 7-day adventure tour package."
-    },
-    {
-      id: 3,
-      title: "Naran Kaghan Expedition",
-      location: "Naran, Pakistan",
-      imageUrl: "https://images.unsplash.com/photo-1496275068113-fff8c90750d1?q=80&w=1500&auto=format&fit=crop",
-      regularPrice: 38000,
-      memberPrice: 30400,
-      rating: 4.7,
-      discount: 20,
-      description: "Explore the stunning valleys of Naran and Kaghan with our all-inclusive 4-day tour."
-    },
-    {
-      id: 4,
-      title: "Murree Getaway",
-      location: "Murree, Pakistan",
-      imageUrl: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?q=80&w=1500&auto=format&fit=crop",
-      regularPrice: 25000,
-      memberPrice: 20000,
-      rating: 4.6,
-      discount: 20,
-      description: "Escape to Murree for a relaxing 3-day getaway with comfortable accommodations and guided tours."
-    }
-  ];
+  const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchTourPackages = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('tour_packages')
+          .select('*')
+          .limit(4); // Only fetch 4 tours for homepage display
+        
+        if (error) {
+          throw error;
+        }
+        
+        // Map to TourPackage type
+        const formattedTours = data.map((tour): TourPackage => ({
+          id: tour.id,
+          title: tour.title,
+          location: tour.location,
+          imageUrl: tour.image_url,
+          regularPrice: tour.regular_price,
+          memberPrice: tour.member_price,
+          discount: tour.discount,
+          rating: tour.rating,
+          description: tour.description
+        }));
+        
+        setTourPackages(formattedTours);
+      } catch (error) {
+        console.error('Error fetching tour packages:', error);
+        toast.error("Failed to load tour packages. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchTourPackages();
+  }, []);
 
   return (
     <section className="py-20 bg-luxury-rich-black">
@@ -149,13 +132,23 @@ const TourPackagesSection = () => {
           </p>
         </ScrollAnimation>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-          {tourPackages.map((tour, index) => (
-            <ScrollAnimation key={tour.id} type="scale" delay={index * 100}>
-              <TourCard tour={tour} />
-            </ScrollAnimation>
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex justify-center items-center h-40">
+            <div className="w-12 h-12 border-4 border-luxury-gold/30 border-t-luxury-gold rounded-full animate-spin"></div>
+          </div>
+        ) : tourPackages.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            {tourPackages.map((tour, index) => (
+              <ScrollAnimation key={tour.id} type="scale" delay={index * 100}>
+                <TourCard tour={tour} />
+              </ScrollAnimation>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-white/70 text-lg">No tour packages available at the moment. Please check back later.</p>
+          </div>
+        )}
         
         <div className="text-center mt-12">
           <Button 
