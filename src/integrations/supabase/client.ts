@@ -12,7 +12,7 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 // Custom method to access tables not included in the type definition
-export const customQuery = (tableName: 'bookings' | 'deals' | 'members' | 'pages' | 'settings' | 'tour_packages') => {
+export const customQuery = (tableName: 'bookings' | 'deals' | 'members' | 'pages' | 'settings' | 'tour_packages' | 'blogs' | 'testimonials' | 'membership_features') => {
   return supabase.from(tableName);
 };
 
@@ -175,6 +175,95 @@ export const updateSettings = async (settingsData: any) => {
     return true;
   } catch (error) {
     console.error("Exception in updateSettings:", error);
+    return false;
+  }
+};
+
+// Specialized function for updating blog posts
+export const updateBlogPost = async (blogId: number, blogData: any) => {
+  try {
+    console.log(`Updating blog post ${blogId} with data:`, blogData);
+    
+    const { data, error } = await supabase
+      .from('blogs')
+      .update({
+        title: blogData.title,
+        slug: blogData.slug,
+        content: blogData.content,
+        image_url: blogData.imageUrl,
+        excerpt: blogData.excerpt,
+        last_modified: new Date().toISOString()
+      })
+      .eq('id', blogId)
+      .select();
+    
+    if (error) {
+      console.error("Error updating blog post:", error);
+      throw error;
+    }
+    
+    console.log(`Blog post ${blogId} updated successfully:`, data);
+    return true;
+  } catch (error) {
+    console.error("Exception in updateBlogPost:", error);
+    return false;
+  }
+};
+
+// Specialized function for updating testimonials
+export const updateTestimonial = async (testimonialId: number, testimonialData: any) => {
+  try {
+    console.log(`Updating testimonial ${testimonialId} with data:`, testimonialData);
+    
+    const { data, error } = await supabase
+      .from('testimonials')
+      .update({
+        name: testimonialData.name,
+        role: testimonialData.role,
+        avatar: testimonialData.avatar,
+        content: testimonialData.content,
+        rating: testimonialData.rating
+      })
+      .eq('id', testimonialId)
+      .select();
+    
+    if (error) {
+      console.error("Error updating testimonial:", error);
+      throw error;
+    }
+    
+    console.log(`Testimonial ${testimonialId} updated successfully:`, data);
+    return true;
+  } catch (error) {
+    console.error("Exception in updateTestimonial:", error);
+    return false;
+  }
+};
+
+// Specialized function for managing membership features
+export const updateMembershipFeature = async (featureId: number, featureData: any) => {
+  try {
+    console.log(`Updating membership feature ${featureId} with data:`, featureData);
+    
+    const { data, error } = await supabase
+      .from('membership_features')
+      .update({
+        membership_type: featureData.membershipType,
+        feature: featureData.feature,
+        included: featureData.included
+      })
+      .eq('id', featureId)
+      .select();
+    
+    if (error) {
+      console.error("Error updating membership feature:", error);
+      throw error;
+    }
+    
+    console.log(`Membership feature ${featureId} updated successfully:`, data);
+    return true;
+  } catch (error) {
+    console.error("Exception in updateMembershipFeature:", error);
     return false;
   }
 };

@@ -1,7 +1,9 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
 import ScrollAnimation from './ScrollAnimation';
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Testimonial {
   id: number;
@@ -11,33 +13,6 @@ interface Testimonial {
   content: string;
   rating: number;
 }
-
-const testimonials: Testimonial[] = [
-  {
-    id: 1,
-    name: "Ayesha Khan",
-    role: "Gold Member",
-    avatar: "https://randomuser.me/api/portraits/women/2.jpg",
-    content: "Being a member of the Luxury Privilege Club has transformed my travel experiences. The exclusive rates and upgrades at luxury hotels have been incredible. I've saved so much while enjoying premium service.",
-    rating: 5
-  },
-  {
-    id: 2,
-    name: "Faisal Ahmed",
-    role: "Platinum Member",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    content: "The membership pays for itself after just one booking. I've been able to take my family to luxury hotels that would normally be out of our budget. The service is outstanding!",
-    rating: 5
-  },
-  {
-    id: 3,
-    name: "Samina Yasmeen",
-    role: "Silver Member",
-    avatar: "https://randomuser.me/api/portraits/women/23.jpg",
-    content: "I was skeptical at first, but the savings are real. I've enjoyed wonderful stays at 5-star hotels across Pakistan at prices better than any booking site I've used before.",
-    rating: 4
-  }
-];
 
 const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => {
   return (
@@ -70,6 +45,64 @@ const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => {
 };
 
 const MembersTestimony = () => {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('testimonials')
+          .select('*')
+          .order('id', { ascending: true });
+        
+        if (error) {
+          throw error;
+        }
+        
+        // If data exists, use it. Otherwise, use fallback data
+        if (data && data.length > 0) {
+          setTestimonials(data);
+        } else {
+          // Fallback data in case the database doesn't have testimonials yet
+          setTestimonials([
+            {
+              id: 1,
+              name: "Ayesha Khan",
+              role: "Gold Member",
+              avatar: "https://randomuser.me/api/portraits/women/2.jpg",
+              content: "Being a member of the Luxury Privilege Club has transformed my travel experiences. The exclusive rates and upgrades at luxury hotels have been incredible. I've saved so much while enjoying premium service.",
+              rating: 5
+            },
+            {
+              id: 2,
+              name: "Faisal Ahmed",
+              role: "Platinum Member",
+              avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+              content: "The membership pays for itself after just one booking. I've been able to take my family to luxury hotels that would normally be out of our budget. The service is outstanding!",
+              rating: 5
+            },
+            {
+              id: 3,
+              name: "Samina Yasmeen",
+              role: "Silver Member",
+              avatar: "https://randomuser.me/api/portraits/women/23.jpg",
+              content: "I was skeptical at first, but the savings are real. I've enjoyed wonderful stays at 5-star hotels across Pakistan at prices better than any booking site I've used before.",
+              rating: 4
+            }
+          ]);
+        }
+      } catch (error) {
+        console.error('Error fetching testimonials:', error);
+        toast.error("Failed to load testimonials. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchTestimonials();
+  }, []);
+
   return (
     <section className="py-20 bg-gradient-to-b from-black to-luxury-rich-black">
       <div className="container mx-auto px-4 md:px-6">
@@ -82,13 +115,19 @@ const MembersTestimony = () => {
           </p>
         </ScrollAnimation>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-          {testimonials.map((testimonial, index) => (
-            <ScrollAnimation key={testimonial.id} type="fadeIn" delay={index * 100}>
-              <TestimonialCard testimonial={testimonial} />
-            </ScrollAnimation>
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex justify-center items-center h-40">
+            <div className="w-12 h-12 border-4 border-luxury-gold/30 border-t-luxury-gold rounded-full animate-spin"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+            {testimonials.map((testimonial, index) => (
+              <ScrollAnimation key={testimonial.id} type="fadeIn" delay={index * 100}>
+                <TestimonialCard testimonial={testimonial} />
+              </ScrollAnimation>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -14,10 +14,17 @@ import DealsTab from "@/components/admin/DealsTab";
 import TourPackagesTab from "@/components/admin/TourPackagesTab";
 import MembersTab from "@/components/admin/MembersTab";
 import SettingsTab from "@/components/admin/SettingsTab";
+import BlogsTab from "@/components/admin/BlogsTab";
+import TestimonialsTab from "@/components/admin/TestimonialsTab";
+import MembershipFeaturesTab from "@/components/admin/MembershipFeaturesTab";
 
 // Import types and database helpers
-import { Page, Deal, TourPackage, Member, Settings } from "@/components/admin/types";
+import { 
+  Page, Deal, TourPackage, Member, Settings, 
+  BlogPost, Testimonial, MembershipFeature 
+} from "@/components/admin/types";
 import { getDatabase, saveDatabase, deleteResource, formatPrice } from "@/utils/database";
+import { supabase, updateBlogPost, updateTestimonial, updateMembershipFeature } from "@/integrations/supabase/client";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -36,17 +43,25 @@ const Admin = () => {
     currency: "",
     paymentMethods: ""
   });
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [membershipFeatures, setMembershipFeatures] = useState<MembershipFeature[]>([]);
   
   // State for editing
   const [editingPage, setEditingPage] = useState<Page | null>(null);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
   const [editingTourPackage, setEditingTourPackage] = useState<TourPackage | null>(null);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
+  const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
+  const [editingMembershipFeature, setEditingMembershipFeature] = useState<MembershipFeature | null>(null);
   
   // Load data function
   const loadDatabaseData = async () => {
     try {
       setIsLoading(true);
+      
+      // Load core data
       const db = await getDatabase();
       setPages(db.pages || []);
       setDeals(db.deals || []);
@@ -58,6 +73,72 @@ const Admin = () => {
         currency: "",
         paymentMethods: ""
       });
+      
+      // Load blog posts from Supabase
+      const { data: blogData, error: blogError } = await supabase
+        .from('blogs')
+        .select('*')
+        .order('id', { ascending: false });
+      
+      if (blogError) {
+        console.error("Error fetching blogs:", blogError);
+      } else {
+        // Transform data to match our interface
+        const formattedBlogs: BlogPost[] = blogData.map(blog => ({
+          id: blog.id,
+          title: blog.title,
+          slug: blog.slug,
+          imageUrl: blog.image_url,
+          excerpt: blog.excerpt,
+          content: blog.content,
+          lastModified: blog.last_modified
+        }));
+        
+        setBlogs(formattedBlogs);
+      }
+      
+      // Load testimonials from Supabase
+      const { data: testimonialData, error: testimonialError } = await supabase
+        .from('testimonials')
+        .select('*')
+        .order('id', { ascending: true });
+      
+      if (testimonialError) {
+        console.error("Error fetching testimonials:", testimonialError);
+      } else {
+        // Transform data to match our interface
+        const formattedTestimonials: Testimonial[] = testimonialData.map(testimonial => ({
+          id: testimonial.id,
+          name: testimonial.name,
+          role: testimonial.role,
+          avatar: testimonial.avatar,
+          content: testimonial.content,
+          rating: testimonial.rating
+        }));
+        
+        setTestimonials(formattedTestimonials);
+      }
+      
+      // Load membership features from Supabase
+      const { data: featureData, error: featureError } = await supabase
+        .from('membership_features')
+        .select('*')
+        .order('id', { ascending: true });
+      
+      if (featureError) {
+        console.error("Error fetching membership features:", featureError);
+      } else {
+        // Transform data to match our interface
+        const formattedFeatures: MembershipFeature[] = featureData.map(feature => ({
+          id: feature.id,
+          membershipType: feature.membership_type as 'Silver' | 'Gold' | 'Platinum',
+          feature: feature.feature,
+          included: feature.included
+        }));
+        
+        setMembershipFeatures(formattedFeatures);
+      }
+      
       setIsLoading(false);
     } catch (error) {
       console.error("Error loading database data:", error);
@@ -295,7 +376,207 @@ const Admin = () => {
     }
   };
   
-  // Delete operations
+  // CRUD operations for blog posts
+  const handleSaveBlog = async (blog: BlogPost) => {
+    try {
+      // Format data for Supabase
+      const blogData = {
+        title: blog.title,
+        slug: blog.slug,
+        content: blog.content,
+        image_url: blog.imageUrl,
+        excerpt: blog.excerpt,
+        last_modified: new Date().toISOString()
+      };
+      
+      let response;
+      
+      if (blog.id) {
+        // Update existing blog post
+        const success = await updateBlogPost(blog.id, blogData);
+        
+        if (!success) {
+          throw new Error("Failed to update blog post");
+        }
+      } else {
+        // Create new blog post
+        response = await supabase
+          .from('blogs')
+          .insert([blogData])
+          .select();
+        
+        if (response.error) {
+          throw response.error;
+        }
+      }
+      
+      toast.success(`Blog post "${blog.title}" ${blog.id ? "updated" : "created"} successfully`);
+      setEditingBlog(null);
+      
+      // Refresh the data
+      loadDatabaseData();
+    } catch (error) {
+      console.error("Error saving blog post:", error);
+      toast.error(`Failed to save blog post: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  };
+  
+  // Delete operations for blog posts
+  const handleDeleteBlog = async (id: number) => {
+    if (confirm("Are you sure you want to delete this blog post?")) {
+      try {
+        const { error } = await supabase
+          .from('blogs')
+          .delete()
+          .eq('id', id);
+        
+        if (error) {
+          throw error;
+        }
+        
+        // Update state
+        setBlogs(blogs.filter(b => b.id !== id));
+        toast.success("Blog post deleted successfully");
+      } catch (error) {
+        console.error("Error deleting blog post:", error);
+        toast.error("Failed to delete blog post. Please try again.");
+      }
+    }
+  };
+  
+  // CRUD operations for testimonials
+  const handleSaveTestimonial = async (testimonial: Testimonial) => {
+    try {
+      // Format data for Supabase
+      const testimonialData = {
+        name: testimonial.name,
+        role: testimonial.role,
+        avatar: testimonial.avatar,
+        content: testimonial.content,
+        rating: testimonial.rating
+      };
+      
+      let response;
+      
+      if (testimonial.id) {
+        // Update existing testimonial
+        const success = await updateTestimonial(testimonial.id, testimonialData);
+        
+        if (!success) {
+          throw new Error("Failed to update testimonial");
+        }
+      } else {
+        // Create new testimonial
+        response = await supabase
+          .from('testimonials')
+          .insert([testimonialData])
+          .select();
+        
+        if (response.error) {
+          throw response.error;
+        }
+      }
+      
+      toast.success(`Testimonial from "${testimonial.name}" ${testimonial.id ? "updated" : "created"} successfully`);
+      setEditingTestimonial(null);
+      
+      // Refresh the data
+      loadDatabaseData();
+    } catch (error) {
+      console.error("Error saving testimonial:", error);
+      toast.error(`Failed to save testimonial: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  };
+  
+  // Delete operations for testimonials
+  const handleDeleteTestimonial = async (id: number) => {
+    if (confirm("Are you sure you want to delete this testimonial?")) {
+      try {
+        const { error } = await supabase
+          .from('testimonials')
+          .delete()
+          .eq('id', id);
+        
+        if (error) {
+          throw error;
+        }
+        
+        // Update state
+        setTestimonials(testimonials.filter(t => t.id !== id));
+        toast.success("Testimonial deleted successfully");
+      } catch (error) {
+        console.error("Error deleting testimonial:", error);
+        toast.error("Failed to delete testimonial. Please try again.");
+      }
+    }
+  };
+  
+  // CRUD operations for membership features
+  const handleSaveMembershipFeature = async (feature: MembershipFeature) => {
+    try {
+      // Format data for Supabase
+      const featureData = {
+        membership_type: feature.membershipType,
+        feature: feature.feature,
+        included: feature.included
+      };
+      
+      let response;
+      
+      if (feature.id) {
+        // Update existing feature
+        const success = await updateMembershipFeature(feature.id, featureData);
+        
+        if (!success) {
+          throw new Error("Failed to update membership feature");
+        }
+      } else {
+        // Create new feature
+        response = await supabase
+          .from('membership_features')
+          .insert([featureData])
+          .select();
+        
+        if (response.error) {
+          throw response.error;
+        }
+      }
+      
+      toast.success(`Membership feature ${feature.id ? "updated" : "created"} successfully`);
+      setEditingMembershipFeature(null);
+      
+      // Refresh the data
+      loadDatabaseData();
+    } catch (error) {
+      console.error("Error saving membership feature:", error);
+      toast.error(`Failed to save membership feature: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  };
+  
+  // Delete operations for membership features
+  const handleDeleteMembershipFeature = async (id: number) => {
+    if (confirm("Are you sure you want to delete this membership feature?")) {
+      try {
+        const { error } = await supabase
+          .from('membership_features')
+          .delete()
+          .eq('id', id);
+        
+        if (error) {
+          throw error;
+        }
+        
+        // Update state
+        setMembershipFeatures(membershipFeatures.filter(f => f.id !== id));
+        toast.success("Membership feature deleted successfully");
+      } catch (error) {
+        console.error("Error deleting membership feature:", error);
+        toast.error("Failed to delete membership feature. Please try again.");
+      }
+    }
+  };
+  
+  // Delete operations for deals
   const handleDeleteDeal = async (id: number) => {
     if (confirm("Are you sure you want to delete this deal?")) {
       try {
@@ -405,6 +686,9 @@ const Admin = () => {
                 <TabsTrigger value="deals">Deals</TabsTrigger>
                 <TabsTrigger value="tourPackages">Tour Packages</TabsTrigger>
                 <TabsTrigger value="members">Members</TabsTrigger>
+                <TabsTrigger value="blogs">Blogs</TabsTrigger>
+                <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
+                <TabsTrigger value="membershipFeatures">Membership Features</TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
               </TabsList>
               
@@ -503,6 +787,39 @@ const Admin = () => {
                   setEditingMember={setEditingMember}
                   handleSaveMember={handleSaveMember}
                   handleDeleteMember={handleDeleteMember}
+                />
+              </TabsContent>
+              
+              {/* Blogs Tab */}
+              <TabsContent value="blogs">
+                <BlogsTab 
+                  blogs={blogs}
+                  editingBlog={editingBlog}
+                  setEditingBlog={setEditingBlog}
+                  handleSaveBlog={handleSaveBlog}
+                  handleDeleteBlog={handleDeleteBlog}
+                />
+              </TabsContent>
+              
+              {/* Testimonials Tab */}
+              <TabsContent value="testimonials">
+                <TestimonialsTab 
+                  testimonials={testimonials}
+                  editingTestimonial={editingTestimonial}
+                  setEditingTestimonial={setEditingTestimonial}
+                  handleSaveTestimonial={handleSaveTestimonial}
+                  handleDeleteTestimonial={handleDeleteTestimonial}
+                />
+              </TabsContent>
+              
+              {/* Membership Features Tab */}
+              <TabsContent value="membershipFeatures">
+                <MembershipFeaturesTab 
+                  features={membershipFeatures}
+                  editingFeature={editingMembershipFeature}
+                  setEditingFeature={setEditingMembershipFeature}
+                  handleSaveFeature={handleSaveMembershipFeature}
+                  handleDeleteFeature={handleDeleteMembershipFeature}
                 />
               </TabsContent>
               

@@ -65,6 +65,32 @@ export interface Settings {
   platinumPrice?: number;
 }
 
+export interface BlogPost {
+  id?: number;
+  title: string;
+  slug: string;
+  imageUrl: string;
+  excerpt: string;
+  content: string;
+  lastModified?: string;
+}
+
+export interface Testimonial {
+  id?: number;
+  name: string;
+  role: string;
+  avatar: string;
+  content: string;
+  rating: number;
+}
+
+export interface MembershipFeature {
+  id?: number;
+  membershipType: 'Silver' | 'Gold' | 'Platinum';
+  feature: string;
+  included: boolean;
+}
+
 export interface Database {
   pages: Page[];
   deals: Deal[];
@@ -72,4 +98,7 @@ export interface Database {
   members: Member[];
   bookings: Booking[];
   settings: Settings;
+  blogs: BlogPost[];
+  testimonials: Testimonial[];
+  membershipFeatures: MembershipFeature[];
 }

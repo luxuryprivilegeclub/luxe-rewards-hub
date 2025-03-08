@@ -24,6 +24,9 @@ const TourCard = ({ tour }: { tour: TourPackage }) => {
           alt={tour.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           loading="lazy"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = 'https://placehold.co/600x400/222/gold?text=Image+Not+Found';
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
         
@@ -95,20 +98,49 @@ const TourPackagesSection = () => {
           throw error;
         }
         
-        // Map to TourPackage type
-        const formattedTours = data.map((tour): TourPackage => ({
-          id: tour.id,
-          title: tour.title,
-          location: tour.location,
-          imageUrl: tour.image_url,
-          regularPrice: tour.regular_price,
-          memberPrice: tour.member_price,
-          discount: tour.discount,
-          rating: tour.rating,
-          description: tour.description
-        }));
-        
-        setTourPackages(formattedTours);
+        if (data && data.length > 0) {
+          // Map to TourPackage type
+          const formattedTours = data.map((tour): TourPackage => ({
+            id: tour.id,
+            title: tour.title,
+            location: tour.location,
+            imageUrl: tour.image_url,
+            regularPrice: tour.regular_price,
+            memberPrice: tour.member_price,
+            discount: tour.discount,
+            rating: tour.rating,
+            description: tour.description
+          }));
+          
+          setTourPackages(formattedTours);
+        } else {
+          console.log("No tour packages found, using fallback data");
+          // Use fallback data if no tours are found
+          setTourPackages([
+            {
+              id: 1,
+              title: "Northern Delight: Hunza & Naltar Valley",
+              location: "Hunza Valley, Pakistan",
+              imageUrl: "https://images.unsplash.com/photo-1589552416467-1c6fffd3c9ca",
+              regularPrice: 125000,
+              memberPrice: 99000,
+              discount: 20,
+              rating: 4.9,
+              description: "Experience the beauty of Pakistan's northern areas with this exclusive tour package."
+            },
+            {
+              id: 2,
+              title: "Neelum Valley Adventure",
+              location: "Kashmir, Pakistan",
+              imageUrl: "https://images.unsplash.com/photo-1578271887552-5ac3a72752bc",
+              regularPrice: 85000,
+              memberPrice: 68000,
+              discount: 20,
+              rating: 4.8,
+              description: "Discover the pristine beauty of Neelum Valley in Kashmir."
+            }
+          ]);
+        }
       } catch (error) {
         console.error('Error fetching tour packages:', error);
         toast.error("Failed to load tour packages. Please try again later.");
