@@ -1,5 +1,5 @@
-import { supabase, customQuery, updateDeal, updateTourPackage, updateMember, updateSettings, updatePage } from "@/integrations/supabase/client";
-import { Database, Settings, Deal, TourPackage, Member, Page, Booking } from "@/components/admin/types";
+import { supabase, customQuery, updateDeal, updateTourPackage, updateMember, updateSettings, updatePage, updateBlogPost, updateTestimonial, updateMembershipFeature } from "@/integrations/supabase/client";
+import { Database, Settings, Deal, TourPackage, Member, Page, Booking, BlogPost, Testimonial, MembershipFeature } from "@/components/admin/types";
 
 // Initialize data in the database if it doesn't exist already
 export const initLocalDatabase = async () => {
@@ -11,13 +11,16 @@ export const initLocalDatabase = async () => {
 export const getDatabase = async (): Promise<Database> => {
   try {
     // Fetch all data from Supabase
-    const [pagesResult, dealsResult, tourPackagesResult, membersResult, settingsResult, bookingsResult] = await Promise.all([
+    const [pagesResult, dealsResult, tourPackagesResult, membersResult, settingsResult, bookingsResult, blogsResult, testimonialsResult, membershipFeaturesResult] = await Promise.all([
       supabase.from('pages').select('*'),
       supabase.from('deals').select('*'),
       supabase.from('tour_packages').select('*'),
       supabase.from('members').select('*'),
       supabase.from('settings').select('*'),
-      customQuery('bookings').select('*')
+      customQuery('bookings').select('*'),
+      supabase.from('blogs').select('*'),
+      supabase.from('testimonials').select('*'),
+      supabase.from('membership_features').select('*')
     ]);
 
     // Check for errors
@@ -27,6 +30,9 @@ export const getDatabase = async (): Promise<Database> => {
     if (membersResult.error) throw new Error(`Error fetching members: ${membersResult.error.message}`);
     if (settingsResult.error) throw new Error(`Error fetching settings: ${settingsResult.error.message}`);
     if (bookingsResult.error) throw new Error(`Error fetching bookings: ${bookingsResult.error.message}`);
+    if (blogsResult.error) throw new Error(`Error fetching blogs: ${blogsResult.error.message}`);
+    if (testimonialsResult.error) throw new Error(`Error fetching testimonials: ${testimonialsResult.error.message}`);
+    if (membershipFeaturesResult.error) throw new Error(`Error fetching membership features: ${membershipFeaturesResult.error.message}`);
 
     // Map database columns to camelCase for frontend
     const pages = pagesResult.data.map((page): Page => ({
@@ -107,6 +113,35 @@ export const getDatabase = async (): Promise<Database> => {
       platinumPrice: settingsData.platinum_price
     };
 
+    // Map blogs data
+    const blogs = blogsResult.data ? blogsResult.data.map((blog: any): BlogPost => ({
+      id: blog.id,
+      title: blog.title,
+      slug: blog.slug,
+      imageUrl: blog.image_url,
+      excerpt: blog.excerpt,
+      content: blog.content,
+      lastModified: blog.last_modified
+    })) : [];
+
+    // Map testimonials data
+    const testimonials = testimonialsResult.data ? testimonialsResult.data.map((testimonial: any): Testimonial => ({
+      id: testimonial.id,
+      name: testimonial.name,
+      role: testimonial.role,
+      avatar: testimonial.avatar,
+      content: testimonial.content,
+      rating: testimonial.rating
+    })) : [];
+
+    // Map membership features data
+    const membershipFeatures = membershipFeaturesResult.data ? membershipFeaturesResult.data.map((feature: any): MembershipFeature => ({
+      id: feature.id,
+      membershipType: feature.membership_type as 'Silver' | 'Gold' | 'Platinum',
+      feature: feature.feature,
+      included: feature.included
+    })) : [];
+
     // Return the composed database object
     return {
       pages,
@@ -114,7 +149,10 @@ export const getDatabase = async (): Promise<Database> => {
       tourPackages,
       members,
       bookings,
-      settings
+      settings,
+      blogs,
+      testimonials,
+      membershipFeatures
     };
   } catch (error) {
     console.error("Error fetching data from Supabase:", error);
@@ -133,7 +171,10 @@ export const getDatabase = async (): Promise<Database> => {
         silverPrice: 35000,
         goldPrice: 70000,
         platinumPrice: 150000
-      }
+      },
+      blogs: [],
+      testimonials: [],
+      membershipFeatures: []
     };
   }
 };
@@ -281,6 +322,101 @@ export const saveDatabase = async (data: Database) => {
       throw new Error("Failed to update settings");
     }
 
+    // Save blog posts
+    for (const blog of data.blogs) {
+      try {
+        if (blog.id) {
+          // Update existing blog post
+          const success = await updateBlogPost(blog.id, blog);
+          if (!success) {
+            throw new Error(`Failed to update blog post: ${blog.title}`);
+          }
+        } else {
+          // Insert new blog post
+          const { error } = await supabase
+            .from('blogs')
+            .insert({
+              title: blog.title,
+              slug: blog.slug,
+              image_url: blog.imageUrl,
+              excerpt: blog.excerpt,
+              content: blog.content,
+              last_modified: new Date().toISOString()
+            });
+            
+          if (error) {
+            console.error("Error inserting blog post:", error);
+            throw error;
+          }
+        }
+      } catch (blogError) {
+        console.error(`Error processing blog post ${blog.title}:`, blogError);
+        throw new Error(`Failed to update blog post: ${blog.title}`);
+      }
+    }
+
+    // Save testimonials
+    for (const testimonial of data.testimonials) {
+      try {
+        if (testimonial.id) {
+          // Update existing testimonial
+          const success = await updateTestimonial(testimonial.id, testimonial);
+          if (!success) {
+            throw new Error(`Failed to update testimonial: ${testimonial.name}`);
+          }
+        } else {
+          // Insert new testimonial
+          const { error } = await supabase
+            .from('testimonials')
+            .insert({
+              name: testimonial.name,
+              role: testimonial.role,
+              avatar: testimonial.avatar,
+              content: testimonial.content,
+              rating: testimonial.rating
+            });
+            
+          if (error) {
+            console.error("Error inserting testimonial:", error);
+            throw error;
+          }
+        }
+      } catch (testimonialError) {
+        console.error(`Error processing testimonial ${testimonial.name}:`, testimonialError);
+        throw new Error(`Failed to update testimonial: ${testimonial.name}`);
+      }
+    }
+
+    // Save membership features
+    for (const feature of data.membershipFeatures) {
+      try {
+        if (feature.id) {
+          // Update existing feature
+          const success = await updateMembershipFeature(feature.id, feature);
+          if (!success) {
+            throw new Error(`Failed to update membership feature: ${feature.feature}`);
+          }
+        } else {
+          // Insert new feature
+          const { error } = await supabase
+            .from('membership_features')
+            .insert({
+              membership_type: feature.membershipType,
+              feature: feature.feature,
+              included: feature.included
+            });
+            
+          if (error) {
+            console.error("Error inserting membership feature:", error);
+            throw error;
+          }
+        }
+      } catch (featureError) {
+        console.error(`Error processing membership feature ${feature.feature}:`, featureError);
+        throw new Error(`Failed to update membership feature: ${feature.feature}`);
+      }
+    }
+
     console.log("Data saved to Supabase successfully");
   } catch (error) {
     console.error("Error saving data to Supabase:", error);
@@ -289,7 +425,7 @@ export const saveDatabase = async (data: Database) => {
 };
 
 // Delete operations
-export const deleteResource = async (table: "bookings" | "deals" | "members" | "pages" | "settings" | "tour_packages", id: number) => {
+export const deleteResource = async (table: "bookings" | "deals" | "members" | "pages" | "settings" | "tour_packages" | "blogs" | "testimonials" | "membership_features", id: number) => {
   try {
     const { error } = await supabase
       .from(table)

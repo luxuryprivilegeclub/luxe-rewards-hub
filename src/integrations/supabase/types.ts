@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      blogs: {
+        Row: {
+          content: string
+          excerpt: string
+          id: number
+          image_url: string
+          last_modified: string | null
+          slug: string
+          title: string
+        }
+        Insert: {
+          content: string
+          excerpt: string
+          id?: number
+          image_url: string
+          last_modified?: string | null
+          slug: string
+          title: string
+        }
+        Update: {
+          content?: string
+          excerpt?: string
+          id?: number
+          image_url?: string
+          last_modified?: string | null
+          slug?: string
+          title?: string
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           amount: number
@@ -183,6 +213,27 @@ export type Database = {
         }
         Relationships: []
       }
+      membership_features: {
+        Row: {
+          feature: string
+          id: number
+          included: boolean
+          membership_type: string
+        }
+        Insert: {
+          feature: string
+          id?: number
+          included?: boolean
+          membership_type: string
+        }
+        Update: {
+          feature?: string
+          id?: number
+          included?: boolean
+          membership_type?: string
+        }
+        Relationships: []
+      }
       pages: {
         Row: {
           content: string
@@ -294,6 +345,33 @@ export type Database = {
           silver_price?: number | null
           site_tagline?: string | null
           site_title?: string | null
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          avatar: string
+          content: string
+          id: number
+          name: string
+          rating: number
+          role: string
+        }
+        Insert: {
+          avatar: string
+          content: string
+          id?: number
+          name: string
+          rating: number
+          role: string
+        }
+        Update: {
+          avatar?: string
+          content?: string
+          id?: number
+          name?: string
+          rating?: number
+          role?: string
         }
         Relationships: []
       }

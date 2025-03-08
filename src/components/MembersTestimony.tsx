@@ -4,15 +4,7 @@ import { Star } from 'lucide-react';
 import ScrollAnimation from './ScrollAnimation';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
-interface Testimonial {
-  id: number;
-  name: string;
-  role: string;
-  avatar: string;
-  content: string;
-  rating: number;
-}
+import { Testimonial } from '@/components/admin/types';
 
 const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => {
   return (
@@ -62,7 +54,16 @@ const MembersTestimony = () => {
         
         // If data exists, use it. Otherwise, use fallback data
         if (data && data.length > 0) {
-          setTestimonials(data);
+          const formattedTestimonials: Testimonial[] = data.map(testimonial => ({
+            id: testimonial.id,
+            name: testimonial.name,
+            role: testimonial.role,
+            avatar: testimonial.avatar,
+            content: testimonial.content,
+            rating: testimonial.rating
+          }));
+          
+          setTestimonials(formattedTestimonials);
         } else {
           // Fallback data in case the database doesn't have testimonials yet
           setTestimonials([
