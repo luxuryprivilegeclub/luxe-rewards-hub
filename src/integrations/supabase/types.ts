@@ -156,6 +156,33 @@ export type Database = {
         }
         Relationships: []
       }
+      members_backup: {
+        Row: {
+          date: string | null
+          email: string | null
+          id: number | null
+          name: string | null
+          points: number | null
+          type: string | null
+        }
+        Insert: {
+          date?: string | null
+          email?: string | null
+          id?: number | null
+          name?: string | null
+          points?: number | null
+          type?: string | null
+        }
+        Update: {
+          date?: string | null
+          email?: string | null
+          id?: number | null
+          name?: string | null
+          points?: number | null
+          type?: string | null
+        }
+        Relationships: []
+      }
       pages: {
         Row: {
           content: string
@@ -177,6 +204,30 @@ export type Database = {
           last_modified?: string | null
           title?: string
           url?: string
+        }
+        Relationships: []
+      }
+      pages_backup: {
+        Row: {
+          content: string | null
+          id: number | null
+          last_modified: string | null
+          title: string | null
+          url: string | null
+        }
+        Insert: {
+          content?: string | null
+          id?: number | null
+          last_modified?: string | null
+          title?: string | null
+          url?: string | null
+        }
+        Update: {
+          content?: string | null
+          id?: number | null
+          last_modified?: string | null
+          title?: string | null
+          url?: string | null
         }
         Relationships: []
       }
@@ -210,6 +261,39 @@ export type Database = {
           silver_price?: number | null
           site_tagline?: string
           site_title?: string
+        }
+        Relationships: []
+      }
+      settings_backup: {
+        Row: {
+          currency: string | null
+          gold_price: number | null
+          id: number | null
+          payment_methods: string | null
+          platinum_price: number | null
+          silver_price: number | null
+          site_tagline: string | null
+          site_title: string | null
+        }
+        Insert: {
+          currency?: string | null
+          gold_price?: number | null
+          id?: number | null
+          payment_methods?: string | null
+          platinum_price?: number | null
+          silver_price?: number | null
+          site_tagline?: string | null
+          site_title?: string | null
+        }
+        Update: {
+          currency?: string | null
+          gold_price?: number | null
+          id?: number | null
+          payment_methods?: string | null
+          platinum_price?: number | null
+          silver_price?: number | null
+          site_tagline?: string | null
+          site_title?: string | null
         }
         Relationships: []
       }

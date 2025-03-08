@@ -1,5 +1,4 @@
-
-import { supabase, customQuery, updateDeal, updateTourPackage, updateMember, updateSettings } from "@/integrations/supabase/client";
+import { supabase, customQuery, updateDeal, updateTourPackage, updateMember, updateSettings, updatePage } from "@/integrations/supabase/client";
 import { Database, Settings, Deal, TourPackage, Member, Page, Booking } from "@/components/admin/types";
 
 // Initialize data in the database if it doesn't exist already
@@ -142,24 +141,14 @@ export const getDatabase = async (): Promise<Database> => {
 // Save data to Supabase
 export const saveDatabase = async (data: Database) => {
   try {
-    // Save pages - FIXED to use Supabase directly
+    // Save pages using the specialized function
     for (const page of data.pages) {
       try {
         if (page.id) {
           // Update existing page
-          const { error } = await supabase
-            .from('pages')
-            .update({
-              title: page.title,
-              url: page.url,
-              last_modified: new Date().toISOString(),
-              content: page.content
-            })
-            .eq('id', page.id);
-            
-          if (error) {
-            console.error("Error updating page:", error);
-            throw error;
+          const success = await updatePage(page.id, page);
+          if (!success) {
+            throw new Error(`Failed to update page: ${page.title}`);
           }
         } else {
           // Insert new page
@@ -250,7 +239,7 @@ export const saveDatabase = async (data: Database) => {
       }
     }
 
-    // Save members
+    // Save members using the specialized function
     for (const member of data.members) {
       try {
         if (member.id) {
@@ -260,14 +249,14 @@ export const saveDatabase = async (data: Database) => {
             throw new Error(`Failed to update member: ${member.name}`);
           }
         } else {
-          // Insert new member - use direct customQuery to avoid issues
-          const { error } = await customQuery('members')
+          // Insert new member
+          const { error } = await supabase
+            .from('members')
             .insert({
               name: member.name,
               email: member.email,
               type: member.type,
-              points: member.points,
-              date: new Date().toISOString()
+              points: member.points
             });
             
           if (error) {
@@ -281,7 +270,7 @@ export const saveDatabase = async (data: Database) => {
       }
     }
 
-    // Save settings
+    // Save settings using the specialized function
     try {
       const success = await updateSettings(data.settings);
       if (!success) {
@@ -302,7 +291,8 @@ export const saveDatabase = async (data: Database) => {
 // Delete operations
 export const deleteResource = async (table: "bookings" | "deals" | "members" | "pages" | "settings" | "tour_packages", id: number) => {
   try {
-    const { error } = await customQuery(table)
+    const { error } = await supabase
+      .from(table)
       .delete()
       .eq('id', id);
     

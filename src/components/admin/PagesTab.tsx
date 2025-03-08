@@ -41,6 +41,11 @@ const PagesTab: React.FC<PagesTabProps> = ({
       return;
     }
     
+    if (!editingPage.content) {
+      toast.error("Page content is required");
+      return;
+    }
+    
     try {
       await handleSavePage(editingPage);
     } catch (error) {

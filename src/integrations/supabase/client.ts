@@ -89,13 +89,42 @@ export const updateTourPackage = async (tourId: number, tourData: any) => {
   }
 };
 
-// Specialized function for updating members - FIXED direct reference to 'members' table
+// Specialized function for updating pages
+export const updatePage = async (pageId: number, pageData: any) => {
+  try {
+    console.log(`Updating page ${pageId} with data:`, pageData);
+    
+    const { data, error } = await supabase
+      .from('pages')
+      .update({
+        title: pageData.title,
+        url: pageData.url,
+        content: pageData.content,
+        last_modified: new Date().toISOString()
+      })
+      .eq('id', pageId)
+      .select();
+    
+    if (error) {
+      console.error("Error updating page:", error);
+      throw error;
+    }
+    
+    console.log(`Page ${pageId} updated successfully:`, data);
+    return true;
+  } catch (error) {
+    console.error("Exception in updatePage:", error);
+    return false;
+  }
+};
+
+// Specialized function for updating members
 export const updateMember = async (memberId: number, memberData: any) => {
   try {
     console.log(`Updating member ${memberId} with data:`, memberData);
     
-    // Use customQuery to ensure we're using the correct table
-    const { data, error } = await customQuery('members')
+    const { data, error } = await supabase
+      .from('members')
       .update({
         name: memberData.name,
         email: memberData.email,
@@ -123,8 +152,8 @@ export const updateSettings = async (settingsData: any) => {
   try {
     console.log(`Updating settings with data:`, settingsData);
     
-    // Use customQuery here as well to be consistent
-    const { data, error } = await customQuery('settings')
+    const { data, error } = await supabase
+      .from('settings')
       .update({
         site_title: settingsData.siteTitle,
         site_tagline: settingsData.siteTagline,

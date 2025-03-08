@@ -38,6 +38,16 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
       return;
     }
     
+    if (!settings.paymentMethods) {
+      toast.error("Payment methods is required");
+      return;
+    }
+    
+    if (!settings.siteTagline) {
+      toast.error("Site tagline is required");
+      return;
+    }
+    
     try {
       await handleSaveSettings();
       toast.success("Settings saved successfully");
