@@ -1,3 +1,4 @@
+
 import { supabase, customQuery, updateDeal, updateTourPackage, updateMember, updateSettings } from "@/integrations/supabase/client";
 import { Database, Settings, Deal, TourPackage, Member, Page, Booking } from "@/components/admin/types";
 
@@ -141,28 +142,43 @@ export const getDatabase = async (): Promise<Database> => {
 // Save data to Supabase
 export const saveDatabase = async (data: Database) => {
   try {
-    // Save pages
+    // Save pages - FIXED to use Supabase directly
     for (const page of data.pages) {
-      if (page.id) {
-        // Update existing page
-        await supabase
-          .from('pages')
-          .update({
-            title: page.title,
-            url: page.url,
-            last_modified: new Date().toISOString(),
-            content: page.content
-          })
-          .eq('id', page.id);
-      } else {
-        // Insert new page
-        await supabase
-          .from('pages')
-          .insert({
-            title: page.title,
-            url: page.url,
-            content: page.content
-          });
+      try {
+        if (page.id) {
+          // Update existing page
+          const { error } = await supabase
+            .from('pages')
+            .update({
+              title: page.title,
+              url: page.url,
+              last_modified: new Date().toISOString(),
+              content: page.content
+            })
+            .eq('id', page.id);
+            
+          if (error) {
+            console.error("Error updating page:", error);
+            throw error;
+          }
+        } else {
+          // Insert new page
+          const { error } = await supabase
+            .from('pages')
+            .insert({
+              title: page.title,
+              url: page.url,
+              content: page.content
+            });
+            
+          if (error) {
+            console.error("Error inserting page:", error);
+            throw error;
+          }
+        }
+      } catch (pageError) {
+        console.error(`Error processing page ${page.title}:`, pageError);
+        throw new Error(`Failed to update page: ${page.title}`);
       }
     }
 
@@ -202,61 +218,77 @@ export const saveDatabase = async (data: Database) => {
 
     // Save tour packages
     for (const tourPackage of data.tourPackages) {
-      if (tourPackage.id) {
-        // Update existing tour package using specialized function
-        const success = await updateTourPackage(tourPackage.id, tourPackage);
-        if (!success) {
-          throw new Error(`Failed to update tour package: ${tourPackage.title}`);
+      try {
+        if (tourPackage.id) {
+          // Update existing tour package using specialized function
+          const success = await updateTourPackage(tourPackage.id, tourPackage);
+          if (!success) {
+            throw new Error(`Failed to update tour package: ${tourPackage.title}`);
+          }
+        } else {
+          // Insert new tour package
+          const { error } = await customQuery('tour_packages')
+            .insert({
+              title: tourPackage.title,
+              location: tourPackage.location,
+              image_url: tourPackage.imageUrl,
+              regular_price: tourPackage.regularPrice,
+              member_price: tourPackage.memberPrice,
+              discount: tourPackage.discount,
+              rating: tourPackage.rating,
+              description: tourPackage.description
+            });
+            
+          if (error) {
+            console.error("Error inserting tour package:", error);
+            throw error;
+          }
         }
-      } else {
-        // Insert new tour package
-        const { error } = await customQuery('tour_packages')
-          .insert({
-            title: tourPackage.title,
-            location: tourPackage.location,
-            image_url: tourPackage.imageUrl,
-            regular_price: tourPackage.regularPrice,
-            member_price: tourPackage.memberPrice,
-            discount: tourPackage.discount,
-            rating: tourPackage.rating,
-            description: tourPackage.description
-          });
-          
-        if (error) {
-          console.error("Error inserting tour package:", error);
-          throw error;
-        }
+      } catch (tourError) {
+        console.error(`Error processing tour package ${tourPackage.title}:`, tourError);
+        throw new Error(`Failed to update tour package: ${tourPackage.title}`);
       }
     }
 
     // Save members
     for (const member of data.members) {
-      if (member.id) {
-        // Update existing member using specialized function
-        const success = await updateMember(member.id, member);
-        if (!success) {
-          throw new Error(`Failed to update member: ${member.name}`);
+      try {
+        if (member.id) {
+          // Update existing member using specialized function
+          const success = await updateMember(member.id, member);
+          if (!success) {
+            throw new Error(`Failed to update member: ${member.name}`);
+          }
+        } else {
+          // Insert new member - use direct customQuery to avoid issues
+          const { error } = await customQuery('members')
+            .insert({
+              name: member.name,
+              email: member.email,
+              type: member.type,
+              points: member.points,
+              date: new Date().toISOString()
+            });
+            
+          if (error) {
+            console.error("Error inserting member:", error);
+            throw error;
+          }
         }
-      } else {
-        // Insert new member
-        const { error } = await customQuery('members')
-          .insert({
-            name: member.name,
-            email: member.email,
-            type: member.type,
-            points: member.points
-          });
-          
-        if (error) {
-          console.error("Error inserting member:", error);
-          throw error;
-        }
+      } catch (memberError) {
+        console.error(`Error processing member ${member.name}:`, memberError);
+        throw new Error(`Failed to update member: ${member.name}`);
       }
     }
 
     // Save settings
-    const success = await updateSettings(data.settings);
-    if (!success) {
+    try {
+      const success = await updateSettings(data.settings);
+      if (!success) {
+        throw new Error("Failed to update settings");
+      }
+    } catch (settingsError) {
+      console.error("Error updating settings:", settingsError);
       throw new Error("Failed to update settings");
     }
 

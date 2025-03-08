@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Save } from "lucide-react";
+import { toast } from "sonner";
 
 interface Settings {
   siteTitle: string;
@@ -26,6 +27,26 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
   setSettings,
   handleSaveSettings
 }) => {
+  const onSaveSettings = async () => {
+    if (!settings.siteTitle) {
+      toast.error("Site title is required");
+      return;
+    }
+    
+    if (!settings.currency) {
+      toast.error("Currency is required");
+      return;
+    }
+    
+    try {
+      await handleSaveSettings();
+      toast.success("Settings saved successfully");
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      toast.error(`Failed to save settings: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  };
+  
   return (
     <div className="space-y-6">
       <div className="bg-black border border-luxury-gold/20 rounded-xl p-6">
@@ -113,7 +134,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
           <div className="flex justify-end">
             <Button
               className="bg-luxury-gold hover:bg-luxury-dark-gold text-black"
-              onClick={handleSaveSettings}
+              onClick={onSaveSettings}
             >
               <Save className="mr-2 h-4 w-4" /> Save Settings
             </Button>

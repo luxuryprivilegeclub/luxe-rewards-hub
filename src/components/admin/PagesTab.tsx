@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Save, Plus } from "lucide-react";
+import { toast } from "sonner";
 
 interface Page {
   id?: number;
@@ -27,6 +28,27 @@ const PagesTab: React.FC<PagesTabProps> = ({
   setEditingPage,
   handleSavePage
 }) => {
+  const onSavePage = async () => {
+    if (!editingPage) return;
+    
+    if (!editingPage.title) {
+      toast.error("Page title is required");
+      return;
+    }
+    
+    if (!editingPage.url) {
+      toast.error("Page URL is required");
+      return;
+    }
+    
+    try {
+      await handleSavePage(editingPage);
+    } catch (error) {
+      console.error("Error saving page:", error);
+      toast.error(`Failed to save page: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  };
+  
   return (
     <div className="space-y-6">
       {editingPage ? (
@@ -73,7 +95,7 @@ const PagesTab: React.FC<PagesTabProps> = ({
               </Button>
               <Button
                 className="bg-luxury-gold hover:bg-luxury-dark-gold text-black"
-                onClick={() => handleSavePage(editingPage)}
+                onClick={onSavePage}
               >
                 <Save className="mr-2 h-4 w-4" /> Save Page
               </Button>
@@ -107,23 +129,29 @@ const PagesTab: React.FC<PagesTabProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {pages.map((page) => (
-                  <tr key={page.id} className="border-b border-luxury-gold/10">
-                    <td className="p-4">{page.title}</td>
-                    <td className="p-4">{page.url}</td>
-                    <td className="p-4">{page.lastModified}</td>
-                    <td className="p-4">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-luxury-gold mr-2"
-                        onClick={() => setEditingPage(page)}
-                      >
-                        Edit
-                      </Button>
-                    </td>
+                {pages.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="p-4 text-center">No pages found. Create your first page!</td>
                   </tr>
-                ))}
+                ) : (
+                  pages.map((page) => (
+                    <tr key={page.id} className="border-b border-luxury-gold/10">
+                      <td className="p-4">{page.title}</td>
+                      <td className="p-4">{page.url}</td>
+                      <td className="p-4">{page.lastModified}</td>
+                      <td className="p-4">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-luxury-gold mr-2"
+                          onClick={() => setEditingPage(page)}
+                        >
+                          Edit
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Save, Plus } from "lucide-react";
+import { toast } from "sonner";
 
 interface Member {
   id?: number;
@@ -29,6 +30,27 @@ const MembersTab: React.FC<MembersTabProps> = ({
   handleSaveMember,
   handleDeleteMember
 }) => {
+  const onSaveMember = async () => {
+    if (!editingMember) return;
+    
+    if (!editingMember.name) {
+      toast.error("Member name is required");
+      return;
+    }
+    
+    if (!editingMember.email) {
+      toast.error("Member email is required");
+      return;
+    }
+    
+    try {
+      await handleSaveMember(editingMember);
+    } catch (error) {
+      console.error("Error saving member:", error);
+      toast.error(`Failed to save member: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  };
+  
   return (
     <div className="space-y-6">
       {editingMember ? (
@@ -94,7 +116,7 @@ const MembersTab: React.FC<MembersTabProps> = ({
               </Button>
               <Button
                 className="bg-luxury-gold hover:bg-luxury-dark-gold text-black"
-                onClick={() => handleSaveMember(editingMember)}
+                onClick={onSaveMember}
               >
                 <Save className="mr-2 h-4 w-4" /> Save Member
               </Button>
@@ -131,41 +153,47 @@ const MembersTab: React.FC<MembersTabProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {members.map((member) => (
-                  <tr key={member.id} className="border-b border-luxury-gold/10">
-                    <td className="p-4">{member.name}</td>
-                    <td className="p-4">{member.email}</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        member.type === "Platinum" ? "bg-luxury-gold/30 text-luxury-gold" :
-                        member.type === "Gold" ? "bg-yellow-600/30 text-yellow-400" :
-                        "bg-gray-500/30 text-gray-300"
-                      }`}>
-                        {member.type}
-                      </span>
-                    </td>
-                    <td className="p-4">{member.date}</td>
-                    <td className="p-4">{member.points.toLocaleString()}</td>
-                    <td className="p-4">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-luxury-gold mr-2"
-                        onClick={() => setEditingMember(member)}
-                      >
-                        Edit
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-red-400"
-                        onClick={() => handleDeleteMember(member.id as number)}
-                      >
-                        Delete
-                      </Button>
-                    </td>
+                {members.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-4 text-center">No members found. Add your first member!</td>
                   </tr>
-                ))}
+                ) : (
+                  members.map((member) => (
+                    <tr key={member.id} className="border-b border-luxury-gold/10">
+                      <td className="p-4">{member.name}</td>
+                      <td className="p-4">{member.email}</td>
+                      <td className="p-4">
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          member.type === "Platinum" ? "bg-luxury-gold/30 text-luxury-gold" :
+                          member.type === "Gold" ? "bg-yellow-600/30 text-yellow-400" :
+                          "bg-gray-500/30 text-gray-300"
+                        }`}>
+                          {member.type}
+                        </span>
+                      </td>
+                      <td className="p-4">{member.date}</td>
+                      <td className="p-4">{member.points.toLocaleString()}</td>
+                      <td className="p-4">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-luxury-gold mr-2"
+                          onClick={() => setEditingMember(member)}
+                        >
+                          Edit
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-red-400"
+                          onClick={() => handleDeleteMember(member.id as number)}
+                        >
+                          Delete
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

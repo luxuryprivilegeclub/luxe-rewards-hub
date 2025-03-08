@@ -89,13 +89,13 @@ export const updateTourPackage = async (tourId: number, tourData: any) => {
   }
 };
 
-// Specialized function for updating members
+// Specialized function for updating members - FIXED direct reference to 'members' table
 export const updateMember = async (memberId: number, memberData: any) => {
   try {
     console.log(`Updating member ${memberId} with data:`, memberData);
     
-    const { data, error } = await supabase
-      .from('members')
+    // Use customQuery to ensure we're using the correct table
+    const { data, error } = await customQuery('members')
       .update({
         name: memberData.name,
         email: memberData.email,
@@ -123,8 +123,8 @@ export const updateSettings = async (settingsData: any) => {
   try {
     console.log(`Updating settings with data:`, settingsData);
     
-    const { data, error } = await supabase
-      .from('settings')
+    // Use customQuery here as well to be consistent
+    const { data, error } = await customQuery('settings')
       .update({
         site_title: settingsData.siteTitle,
         site_tagline: settingsData.siteTagline,
