@@ -1,5 +1,4 @@
-
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, customQuery, updateDeal, updateTourPackage, updatePage, updateMember, updateSettings, updateBlogPost, updateTestimonial, updateMembershipFeature } from "@/integrations/supabase/client";
 import { Database, Settings, Deal, TourPackage, Member, Page, Booking, BlogPost, Testimonial, MembershipFeature } from "@/components/admin/types";
 
 // Initialize data in the database if it doesn't exist already
