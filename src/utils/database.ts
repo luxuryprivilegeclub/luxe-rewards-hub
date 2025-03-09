@@ -1,4 +1,5 @@
-import { supabase, customQuery, updateDeal, updateTourPackage, updateMember, updateSettings, updatePage, updateBlogPost, updateTestimonial, updateMembershipFeature } from "@/integrations/supabase/client";
+
+import { supabase } from "@/integrations/supabase/client";
 import { Database, Settings, Deal, TourPackage, Member, Page, Booking, BlogPost, Testimonial, MembershipFeature } from "@/components/admin/types";
 
 // Initialize data in the database if it doesn't exist already
@@ -17,7 +18,7 @@ export const getDatabase = async (): Promise<Database> => {
       supabase.from('tour_packages').select('*'),
       supabase.from('members').select('*'),
       supabase.from('settings').select('*'),
-      customQuery('bookings').select('*'),
+      supabase.from('bookings').select('*'),
       supabase.from('blogs').select('*'),
       supabase.from('testimonials').select('*'),
       supabase.from('membership_features').select('*')

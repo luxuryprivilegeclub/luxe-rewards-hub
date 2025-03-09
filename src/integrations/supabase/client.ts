@@ -12,7 +12,11 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 // Custom method to access tables not included in the type definition
-export const customQuery = (tableName: string) => {
+type ValidTableNames = "blogs" | "bookings" | "deals" | "deals_backup" | "members" | "members_backup" | 
+                       "membership_features" | "pages" | "pages_backup" | "settings" | "settings_backup" | 
+                       "testimonials" | "tour_packages" | "tour_packages_backup";
+
+export const customQuery = (tableName: ValidTableNames) => {
   return supabase.from(tableName);
 };
 
