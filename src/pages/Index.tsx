@@ -159,7 +159,7 @@ const Index = () => {
                   <ul className="space-y-3">
                     <li className="flex items-start">
                       <Check className="h-5 w-5 text-luxury-gold mt-0.5 mr-2 flex-shrink-0" />
-                      <span>Up to 70% discount at partner Domestic & International hotels</span>
+                      <span>Up to 70% discount at partner Domestic and International hotels</span>
                     </li>
                     <li className="flex items-start">
                       <Check className="h-5 w-5 text-luxury-gold mt-0.5 mr-2 flex-shrink-0" />
@@ -199,7 +199,7 @@ const Index = () => {
                   <ul className="space-y-3">
                     <li className="flex items-start">
                       <Check className="h-5 w-5 text-luxury-gold mt-0.5 mr-2 flex-shrink-0" />
-                      <span>Up to 70% discount at partner Domestic & International hotels</span>
+                      <span>Up to 70% discount at partner Domestic and International hotels</span>
                     </li>
                     <li className="flex items-start">
                       <Check className="h-5 w-5 text-luxury-gold mt-0.5 mr-2 flex-shrink-0" />
@@ -240,7 +240,7 @@ const Index = () => {
                   <ul className="space-y-3">
                     <li className="flex items-start">
                       <Check className="h-5 w-5 text-luxury-gold mt-0.5 mr-2 flex-shrink-0" />
-                      <span>Up to 70% discount at partner Domestic & International hotels</span>
+                      <span>Up to 70% discount at partner Domestic and International hotels</span>
                     </li>
                     <li className="flex items-start">
                       <Check className="h-5 w-5 text-luxury-gold mt-0.5 mr-2 flex-shrink-0" />
