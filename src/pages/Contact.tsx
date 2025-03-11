@@ -128,8 +128,8 @@ const Contact = () => {
                       </div>
                       <div className="ml-4">
                         <h3 className="text-lg font-medium mb-1">Phone</h3>
-                        <p className="text-white/70">+92 51 8123456</p>
-                        <p className="text-white/70">+92 300 1234567 (24/7 Support)</p>
+                        <p className="text-white/70">+92 336 8356375</p>
+                        <p className="text-white/70">+92 336 8356375(24/7 Support)</p>
                       </div>
                     </div>
                     
@@ -141,8 +141,8 @@ const Contact = () => {
                       </div>
                       <div className="ml-4">
                         <h3 className="text-lg font-medium mb-1">Email</h3>
-                        <p className="text-white/70">contact@luxuryhotelprivileges.pk</p>
-                        <p className="text-white/70">support@luxuryhotelprivileges.pk</p>
+                        <p className="text-white/70">info@luxuryprivilegeclub.com</p>
+                        <p className="text-white/70">support@luxuryprivilegeclub.com</p>
                       </div>
                     </div>
                     
@@ -155,8 +155,8 @@ const Contact = () => {
                       </div>
                       <div className="ml-4">
                         <h3 className="text-lg font-medium mb-1">Address</h3>
-                        <p className="text-white/70">Blue Area, F-7 Jinnah Avenue</p>
-                        <p className="text-white/70">Islamabad, Pakistan</p>
+                        <p className="text-white/70">Office 203, Progressive Square Building, Main Shahra-e-Faisal</p>
+                        <p className="text-white/70">Karachi, Pakistan</p>
                       </div>
                     </div>
                     
@@ -168,8 +168,8 @@ const Contact = () => {
                       </div>
                       <div className="ml-4">
                         <h3 className="text-lg font-medium mb-1">Business Hours</h3>
-                        <p className="text-white/70">Monday - Friday: 9:00 AM - 6:00 PM</p>
-                        <p className="text-white/70">Saturday: 10:00 AM - 4:00 PM</p>
+                        <p className="text-white/70">Monday - Friday: 10:00 AM - 6:00 PM</p>
+                        <p className="text-white/70">Saturday: 11:00 AM - 4:00 PM</p>
                         <p className="text-white/70">Sunday: Closed (Online Support Available)</p>
                       </div>
                     </div>
@@ -212,7 +212,7 @@ const Contact = () => {
             <ScrollAnimation type="fadeIn" className="rounded-xl overflow-hidden border border-luxury-gold/20 shadow-[0_8px_30px_rgb(0,0,0,0.5)]">
               <div className="aspect-w-16 aspect-h-9">
                 <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3320.5695200887315!2d73.08212947586573!3d33.7065231731189!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38dfbfd3dd1d6097%3A0xb5ebd03033fb87a!2sBlue%20Area%2C%20Islamabad%2C%20Pakistan!5e0!3m2!1sen!2s!4v1697712037257!5m2!1sen!2s" 
+                  src="https://maps.app.goo.gl/Xo47SyF5hjGTM8LAA" 
                   width="100%" 
                   height="100%" 
                   style={{ border: 0 }} 
