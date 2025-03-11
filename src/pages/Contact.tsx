@@ -212,7 +212,7 @@ const Contact = () => {
             <ScrollAnimation type="fadeIn" className="rounded-xl overflow-hidden border border-luxury-gold/20 shadow-[0_8px_30px_rgb(0,0,0,0.5)]">
               <div className="aspect-w-16 aspect-h-9">
                 <iframe 
-                  src="https://maps.app.goo.gl/Xo47SyF5hjGTM8LAA" 
+                  src="https://www.google.com/maps/place/Luxury+Privilege+Club/@24.8600428,67.0609234,17z/data=!3m1!4b1!4m6!3m5!1s0x3eb33f4284129233:0x159a56820daf0378!8m2!3d24.860038!4d67.0634983!16s%2Fg%2F11j0h7rjpz?entry=ttu&g_ep=EgoyMDI1MDMwNC4wIKXMDSoASAFQAw%3D%3D" 
                   width="100%" 
                   height="100%" 
                   style={{ border: 0 }} 
