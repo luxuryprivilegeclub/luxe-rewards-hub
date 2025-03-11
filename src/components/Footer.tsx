@@ -99,15 +99,15 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-start">
                 <span className="text-luxury-gold mr-2">📍</span>
-                <span className="text-white/60 text-sm">Office #123, Some Building, Karachi, Pakistan</span>
+                <span className="text-white/60 text-sm">Office 203, Progressive Square, Main Shahr-e-Faisal, Karachi, Pakistan</span>
               </li>
               <li className="flex items-start">
                 <span className="text-luxury-gold mr-2">📞</span>
-                <span className="text-white/60 text-sm">+92 300 1234567</span>
+                <span className="text-white/60 text-sm">+92 336 8356375</span>
               </li>
               <li className="flex items-start">
                 <span className="text-luxury-gold mr-2">✉️</span>
-                <span className="text-white/60 text-sm">info@luxerewards.pk</span>
+                <span className="text-white/60 text-sm">info@luxuryprivilegeclub.com</span>
               </li>
             </ul>
           </div>
@@ -115,7 +115,7 @@ const Footer = () => {
         
         <div className="pt-8 border-t border-white/10 text-center">
           <p className="text-white/40 text-sm">
-            &copy; {currentYear} LuxeRewards. All rights reserved.
+            &copy; {currentYear} Luxury Privilege Club. All rights reserved.
           </p>
         </div>
       </div>
