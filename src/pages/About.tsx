@@ -132,7 +132,7 @@ const About = () => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <h3 className="text-xl font-display">Fatima Zaidi</h3>
+                <h3 className="text-xl font-display">Fatima Mansoor</h3>
                 <p className="text-luxury-gold mb-2">Chief Operations Officer</p>
                 <p className="text-white/70 text-sm">
                   Fatima oversees our day-to-day operations and hotel partnership development.
